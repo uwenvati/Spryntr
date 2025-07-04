@@ -7,7 +7,7 @@ export default function Hero() {
 {/* Left side: Text */}
 <div className="w-full md:w-[60%] px-6 md:px-16 space-y-6">
 
-  <h1 className="mt-0 text-7xl font-bold leading-[1.1] text-black">
+  <h1 className="mt-0 text-6xl font-bold leading-[1.1] text-black">
     Structure. Connect. <br />
     <span className="bg-gradient-to-r from-black to-gray-600 text-transparent bg-clip-text">
       Activate your data.
