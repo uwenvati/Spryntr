@@ -27,8 +27,9 @@ export default function TeamSection() {
       {/* Quote Section */}
       <div className="bg-[#555555] py-20 px-6 text-center text-white">
         <p className="text-xl md:text-3xl font-semibold max-w-3xl mx-auto">
-          "A world where better decisions lead to a stronger, more capable humanity."
-        </p>
+  &ldquo;A world where better decisions lead to a stronger, more capable humanity.&rdquo;
+</p>
+
         <div className="w-12 h-1 bg-white mt-4 mx-auto rounded-full" />
       </div>
     </section>

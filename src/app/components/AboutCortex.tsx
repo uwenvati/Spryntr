@@ -33,9 +33,10 @@ export default function AboutCortex() {
             className="w-6 h-6 mx-auto mb-2"
           />
           <p className="text-base text-gray-600 italic">
-            "Intelligence without context is just computation. Spryntr provides the context
-            that transforms AI from a tool into a strategic advantage."
-          </p>
+  &ldquo;Intelligence without context is just computation. Spryntr provides the context
+  that transforms AI from a tool into a strategic advantage.&rdquo;
+</p>
+
         </div>
       </div>
     </section>
