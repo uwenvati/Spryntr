@@ -8,12 +8,13 @@ export default function TeamSection() {
   return (
     <section>
       {/* Team Members */}
-       <div className="bg-[#F6F6F6] pt-12 pb-16 px-6 text-center">
+       <div className="bg-[#F6F6F6] pt-12 pb-16 px-6 mt-24 text-center">
 
         <h2 className="text-3xl md:text-5xl font-bold mb-10">The Team</h2>
-        <div className="flex flex-col md:flex-row justify-center gap-12">
+       <div className="flex flex-col md:flex-row justify-center gap-y-16 md:gap-x-24">
           {team.map((member, idx) => (
-            <div key={idx} className="flex flex-col items-center space-y-2">
+            <div key={idx}  className="flex flex-col items-center space-y-2 transform first:translate-x-[-1rem] md:first:translate-x-[-4rem] last:translate-x-[0.5rem] md:last:translate-x-[2rem]"
+            >
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white border flex items-center justify-center text-xl font-semibold text-black">
                 {member.initials}
               </div>

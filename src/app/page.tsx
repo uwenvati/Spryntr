@@ -2,6 +2,7 @@ import Hero from './components/Hero'
 import AboutSection from './components/AboutSection'
 import AboutCortex from './components/AboutCortex'
 import TeamSection from './components/TeamSection'
+import Footer from './components/Footer'
 
 export default function HomePage() {
   return (
@@ -10,6 +11,8 @@ export default function HomePage() {
       <AboutSection />
       <AboutCortex />
       <TeamSection/>
+      
+      <Footer/>
     </main>
   )
 }
