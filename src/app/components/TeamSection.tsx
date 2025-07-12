@@ -8,7 +8,8 @@ export default function TeamSection() {
   return (
     <section>
       {/* Team Members */}
-       <div className="bg-[#F6F6F6] pt-12 pb-16 px-6 mt-24 text-center">
+       <div className="bg-[#F6F6F6] pt-12 pb-16 px-6 mt-0 text-center">
+
 
         <h2 className="text-3xl md:text-5xl font-bold mb-10">The Team</h2>
        <div className="flex flex-col md:flex-row justify-center gap-y-16 md:gap-x-24">
