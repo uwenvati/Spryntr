@@ -66,7 +66,8 @@ export default function AboutSection() {
   }
 
   return (
-    <section className="bg-[#FCFCFD] py-16 px-4 md:px-20">
+   <section className="bg-[#FCFCFD] py-16 px-4 md:px-8">
+
       {/* Heading */}
   <div className="text-right max-w-3xl ml-auto mr-4 md:mr-10 mb-12">
   <h2 className="text-4xl md:text-6xl font-bold leading-tight">
@@ -101,38 +102,43 @@ export default function AboutSection() {
       </ul>
 
       {/* Scrollable Content */}
-      <div
+     <div
   ref={containerRef}
-  className="flex overflow-x-auto space-x-10 scroll-smooth snap-x snap-mandatory pb-4 no-scrollbar"
+  className="flex overflow-x-auto space-x-10 scroll-smooth snap-x snap-mandatory pb-4 no-scrollbar mx-auto"
 >
+
        {modules.map((mod, index) => (
   <motion.div
-    key={index}
-    data-index={index}
-    className="about-card snap-start shrink-0 w-[80vw] md:w-[60vw] bg-white p-6 rounded-xl shadow border border-gray-200"
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: index * 0.1 }}
-    viewport={{ once: true }}
-  >
+  key={index}
+  data-index={index}
+  className="group about-card snap-start shrink-0 w-[80vw] md:w-[60vw] bg-white p-6 rounded-xl shadow border border-gray-200 transition-all duration-300 hover:shadow-lg"
 
-    <button className="mb-4 flex items-center gap-2 text-sm border px-4 py-2 rounded hover:bg-gray-100">
-      Learn more
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 5l7 7-7 7"
-        />
-      </svg>
-    </button>
+
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, delay: index * 0.1 }}
+  viewport={{ once: true }}
+>
+
+
+    <button className="mb-4 flex items-center gap-2 text-sm border border-black px-4 py-2 rounded transition-all duration-300 group-hover:bg-black group-hover:text-white">
+  Learn more
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+</button>
+
     <h3 className="text-2xl font-semibold mb-2">{mod.title}</h3>
     <p className="text-gray-600 text-sm">{mod.description}</p>
   </motion.div>

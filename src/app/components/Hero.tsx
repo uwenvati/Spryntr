@@ -36,14 +36,15 @@ export default function Hero() {
 
 
   {/* Right side: Image */}
-  <div className="w-full md:w-1/2 flex justify-end">
-    <img
-      src="/assets/images/hero-img.svg"
-      alt="Hero Visual"
-      className="w-[80%] md:w-[70%] lg:w-[65%] h-auto object-contain"
-    />
-  </div>
+<div className="w-full md:w-1/2 flex justify-end">
+  <img
+    src="/assets/images/hero-img.svg"
+    alt="Hero Visual"
+    className="w-[80%] md:w-[70%] lg:w-[65%] h-auto object-contain animate-float transition-transform duration-700 hover:scale-105"
+  />
+</div>
+
 </section>
 
   )
-}
+} 

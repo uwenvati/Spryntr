@@ -1,24 +1,36 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+
   const links = [
     { name: 'About', href: '/about' },
     { name: 'Products', href: '/product' },
     { name: 'Resources', href: '#' },
   ]
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <nav className="relative z-10 mt-4 mb-0 mx-4 p-4 bg-[#FFFFFF] rounded-2xl shadow flex items-center justify-between font-sans">
-
-
-
-
+    <nav
+      className={`fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl shadow transition duration-300 flex items-center justify-between font-sans ${
+        scrolled
+          ? 'bg-white/80 backdrop-blur-md'
+          : 'bg-white/40 backdrop-blur-sm'
+      }`}
+    >
       {/* Logo */}
       <div className="flex items-center gap-2">
         <img src="/assets/spryntr.svg" alt="Spryntr Logo" className="h-6" />
-        {/* <span className="font-bold text-lg">SPRYNTR</span> */}
       </div>
 
       {/* Nav links with down-arrow */}
@@ -41,7 +53,6 @@ export default function Navbar() {
           </li>
         ))}
 
-        {/* Pricing (no arrow) */}
         <li>
           <Link href="#" className="text-black">
             Pricing
