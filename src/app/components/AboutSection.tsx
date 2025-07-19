@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import { useTapHover } from '@/hooks/useTapHover'
 
 const modules = [
   {
@@ -108,38 +109,61 @@ export default function AboutSection() {
         ref={containerRef}
         className="flex overflow-x-auto space-x-10 scroll-smooth snap-x snap-mandatory pb-4 no-scrollbar mx-auto"
       >
-        {modules.map((mod, index) => (
-          <motion.div
-            key={index}
-            data-index={index}
-            className="group about-card snap-start shrink-0 w-[90vw] md:w-[60vw] bg-white p-6 rounded-xl shadow border border-gray-200 transition-all duration-300 hover:shadow-lg"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-          >
-            <button className="mb-4 flex items-center gap-2 text-sm border border-black px-4 py-2 rounded transition-all duration-300 group-hover:bg-black group-hover:text-white">
-              Learn more
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 transform transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+       {modules.map((mod, index) => {
+  const { hovered, bind } = useTapHover()
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768 // fallback since no isMobile hook here
 
-            <h3 className="text-2xl font-semibold mb-2">{mod.title}</h3>
-            <p className="text-gray-600 text-sm">{mod.description}</p>
-          </motion.div>
-        ))}
+  return (
+    <motion.div
+      key={index}
+      data-index={index}
+      {...bind}
+      className={`group about-card snap-start shrink-0 w-[90vw] md:w-[60vw] bg-white p-6 rounded-xl border border-gray-200 transition-all duration-300
+        ${isMobile
+          ? hovered ? 'scale-105 shadow-lg' : 'shadow'
+          : 'hover:scale-105 hover:shadow-lg shadow'}
+      `}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      viewport={{ once: true }}
+    >
+      <button
+        className={`mb-4 flex items-center gap-2 text-sm border px-4 py-2 rounded transition-all duration-300 ${
+          isMobile
+            ? hovered ? 'bg-black text-white border-black' : 'border-black'
+            : 'group-hover:bg-black group-hover:text-white group-hover:border-black border-black'
+        }`}
+      >
+        Learn more
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={`h-4 w-4 transform transition-transform duration-300 ${
+            isMobile
+              ? hovered ? 'translate-x-1 text-white' : ''
+              : 'group-hover:translate-x-1 group-hover:text-white'
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+
+      <h3 className="text-2xl font-semibold mb-2">{mod.title}</h3>
+      <p className="text-gray-600 text-sm">{mod.description}</p>
+    </motion.div>
+  )
+})}
+
+
+
       </div>
 
  

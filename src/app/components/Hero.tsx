@@ -1,6 +1,9 @@
 'use client'
+import { useTapHover } from '@/hooks/useTapHover'
 
 export default function Hero() {
+  const { hovered, bind } = useTapHover()
+
   return (
     <section className="mt-24 md:mt-0 flex flex-col-reverse md:flex-row items-center justify-between w-full bg-[#FCFCFD] pb-16 overflow-hidden relative z-10">
 
@@ -25,7 +28,7 @@ export default function Hero() {
         </p>
 
         <div className="flex md:block justify-center">
-          <button className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-900 transition z-10 relative">
+          <button {...bind}  className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-900 transition z-10 relative">
             See Cortex in Action
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -42,6 +45,7 @@ export default function Hero() {
 
         {/* Mobile-only Bottom Floating SVG */}
         <img
+        
           src="/assets/images/hero-bottom.svg"
           alt="Bottom Graphic"
         className="absolute bottom-4 left-4 w-36 md:hidden animate-float-fast pointer-events-none"
@@ -51,6 +55,7 @@ export default function Hero() {
       {/* Right side: Desktop image */}
       <div className="hidden md:flex w-full md:w-1/2 justify-end pr-0">
         <img
+        {...bind} 
           src="/assets/images/hero-img.svg"
           alt="Hero Visual"
           className="w-full max-w-[450px] h-auto object-contain animate-float transition-transform duration-700 hover:scale-105"

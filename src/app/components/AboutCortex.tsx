@@ -16,32 +16,45 @@ function useIsMobile() {
 }
 
 function ScrollingModules() {
+  const isMobile = useIsMobile()
+  const [hovered, setHovered] = useState<number | null>(null)
+
   const images = [
     "module1.png", "module2.png", "module3.png", "module4.png", "module5.png",
     "module6.png", "module7.png", "module8.png", "module9.png", "module10.png", "module11.png",
   ]
 
-  const duplicated = [...images, ...images] // duplicate for smooth loop
+  const duplicated = [...images, ...images]
 
   return (
     <div className="overflow-hidden mt-10 relative rounded-2xl">
       <div className="flex gap-4 whitespace-nowrap animate-scroll-loop hover:[animation-play-state:paused] w-max">
-        {duplicated.map((src, index) => (
-          <div
-            key={`${src}-${index}`} // safe from duplicate key errors 
-            className="flex-shrink-0 w-48 md:w-52 h-52 rounded-xl flex items-center justify-center p-4 transition-transform duration-300 hover:scale-105"
-          >
-            <img
-              src={`/modules/${src}`}
-              alt={`Module ${index + 1}`}
-              className="h-full w-full object-contain"
-            />
-          </div>
-        ))}
+        {duplicated.map((src, index) => {
+          const isActive = isMobile ? hovered === index : false
+
+          return (
+            <div
+              key={`${src}-${index}`}
+              className={`flex-shrink-0 w-48 md:w-52 h-52 rounded-xl flex items-center justify-center p-4 transition-transform duration-300
+                ${isActive ? "scale-105" : ""}
+                ${!isMobile ? "hover:scale-105" : ""}
+              `}
+              onTouchStart={() => isMobile && setHovered(index)}
+              onTouchEnd={() => isMobile && setTimeout(() => setHovered(null), 300)}
+            >
+              <img
+                src={`/modules/${src}`}
+                alt={`Module ${index + 1}`}
+                className="h-full w-full object-contain"
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
+
 
 export default function AboutCortex() {
   const isMobile = useIsMobile()
