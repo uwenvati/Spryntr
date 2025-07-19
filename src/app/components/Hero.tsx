@@ -6,7 +6,6 @@ export default function Hero() {
 
   return (
     <section className="mt-24 md:mt-0 flex flex-col-reverse md:flex-row items-center justify-between w-full bg-[#FCFCFD] pb-16 overflow-hidden relative z-10">
-
       {/* Left side: Text */}
       <div className="w-full md:w-[60%] px-6 md:px-16 space-y-6 relative">
         {/* Mobile-only Top Floating SVG */}
@@ -28,7 +27,12 @@ export default function Hero() {
         </p>
 
         <div className="flex md:block justify-center">
-          <button {...bind}  className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm hover:bg-gray-900 transition z-10 relative">
+          <button
+            {...bind}
+            className={`flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm transition z-10 relative ${
+              hovered ? 'bg-gray-900' : 'hover:bg-gray-900'
+            }`}
+          >
             See Cortex in Action
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -45,20 +49,21 @@ export default function Hero() {
 
         {/* Mobile-only Bottom Floating SVG */}
         <img
-        
           src="/assets/images/hero-bottom.svg"
           alt="Bottom Graphic"
-        className="absolute bottom-4 left-4 w-36 md:hidden animate-float-fast pointer-events-none"
+          className="absolute bottom-4 left-4 w-36 md:hidden animate-float-fast pointer-events-none"
         />
       </div>
 
       {/* Right side: Desktop image */}
       <div className="hidden md:flex w-full md:w-1/2 justify-end pr-0">
         <img
-        {...bind} 
+          {...bind}
           src="/assets/images/hero-img.svg"
           alt="Hero Visual"
-          className="w-full max-w-[450px] h-auto object-contain animate-float transition-transform duration-700 hover:scale-105"
+          className={`w-full max-w-[450px] h-auto object-contain animate-float transition-transform duration-700 ${
+            hovered ? 'scale-105' : 'hover:scale-105'
+          }`}
         />
       </div>
     </section>
