@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTapHover } from '@/hooks/useTapHover'
 
 export default function Hero() {
@@ -9,12 +10,21 @@ export default function Hero() {
     <section className="mt-24 md:mt-0 flex flex-col-reverse md:flex-row items-center justify-between w-full bg-[#FCFCFD] pb-16 overflow-hidden relative z-10 animate-fade-in">
       {/* Left side */}
       <div className="w-full md:w-[60%] px-6 md:px-16 space-y-6 relative">
-        <img src="/assets/images/hero-top.svg" alt="Top Graphic" className="absolute top-0 right-0 w-40 md:hidden animate-float pointer-events-none" />
+        <Image
+          src="/assets/images/hero-top.svg"
+          alt="Top Graphic"
+          width={160}
+          height={160}
+          className="absolute top-0 right-0 w-40 md:hidden animate-float pointer-events-none"
+          priority
+        />
 
         <h1 className="mt-0 text-5xl md:text-6xl font-extrabold leading-[1.1] z-10 relative">
           <span className="sheen-wrap">
             <span className="sheen-text">Make decisions powered by smarter data</span>
-            <span aria-hidden="true" className="sheen-overlay">Make decisions powered by smarter data</span>
+            <span aria-hidden="true" className="sheen-overlay">
+              Make decisions powered by smarter data
+            </span>
           </span>
         </h1>
 
@@ -64,23 +74,34 @@ export default function Hero() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="relative z-[1] h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
 
-        <img src="/assets/images/hero-bottom.svg" alt="Bottom Graphic" className="absolute bottom-4 left-4 w-36 md:hidden animate-float pointer-events-none" />
+        <Image
+          src="/assets/images/hero-bottom.svg"
+          alt="Bottom Graphic"
+          width={144}
+          height={144}
+          className="absolute bottom-4 left-4 w-36 md:hidden animate-float pointer-events-none"
+        />
       </div>
 
       {/* Right side */}
       <div className="hidden md:flex w-full md:w-1/2 justify-end pr-0 relative">
         <span className="hero-shadow" />
-        <img
+        <Image
           {...bind}
           src="/assets/images/hero-img.svg"
           alt="Hero Visual"
+          width={480}
+          height={480}
           className={`w-full max-w-[480px] h-auto object-contain animate-float transition-transform duration-300 ${
             hovered ? 'scale-105' : 'hover:scale-105'
           }`}

@@ -7,7 +7,6 @@ import { ChevronDown, Folder, Users, BookOpen, GitBranch, FileText } from 'lucid
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 
-
 type MenuKey = 'About' | 'Products' | 'Resources' | null
 
 const DROPDOWNS: Record<Exclude<MenuKey, null>, { name: string; href: string; icon?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }[]> = {
@@ -31,30 +30,25 @@ function Icon({ name }: { name?: 'folder' | 'users' | 'book' | 'git' | 'file' | 
   const common = { size: 16, className: 'text-black' } as const
   switch (name) {
     case 'folder': return <Folder {...common} />
-    case 'users':  return <Users {...common} />
-    case 'book':   return <BookOpen {...common} />
-    case 'git':    return <GitBranch {...common} />
-    case 'file':   return <FileText {...common} />
+    case 'users': return <Users {...common} />
+    case 'book': return <BookOpen {...common} />
+    case 'git': return <GitBranch {...common} />
+    case 'file': return <FileText {...common} />
   }
 }
 
 const ddVariants: Variants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.16, ease: 'easeOut' } },
-  exit:    { opacity: 0, y: 8, transition: { duration: 0.12, ease: 'easeIn' } },
+  exit: { opacity: 0, y: 8, transition: { duration: 0.12, ease: 'easeIn' } },
 }
 
 const accVariants: Variants = ddVariants
-// same motion for mobile accordion
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-
-  // Desktop dropdown (hover with delay)
   const [openKey, setOpenKey] = useState<MenuKey>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Mobile
   const [menuOpen, setMenuOpen] = useState(false)
   const [openMobileKey, setOpenMobileKey] = useState<MenuKey>(null)
 
@@ -86,7 +80,7 @@ export default function Navbar() {
       <nav className={desktopWrapper}>
         {/* Left: Logo */}
         <Link href="/" className="flex items-center">
-          <img src="/assets/spryntr.svg" alt="Spryntr Logo" className="h-6 md:h-8" />
+          <Image src="/assets/spryntr.svg" alt="Spryntr Logo" width={100} height={32} className="h-6 md:h-8 w-auto" />
         </Link>
 
         {/* Center: Dropdown links */}
@@ -137,7 +131,7 @@ export default function Navbar() {
             </li>
           ))}
 
-          {/* Pricing – no dropdown */}
+          {/* Pricing */}
           <li>
             <Link href="/pricing" className="text-black">
               Pricing
@@ -152,21 +146,14 @@ export default function Navbar() {
           </Link>
           <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
             Get started
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 ml-2 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </nav>
 
-      {/* MOBILE NAV BAR */}
+      {/* MOBILE NAV */}
       <nav
         className={
           `md:hidden fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl shadow ` +
@@ -176,14 +163,7 @@ export default function Navbar() {
       >
         <Image src="/assets/logo.svg" alt="Logo" width={24} height={24} />
         <button onClick={() => setMenuOpen(true)}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-black"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -192,89 +172,99 @@ export default function Navbar() {
       {/* MOBILE FULLSCREEN MENU */}
       {menuOpen && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-2xl font-medium">
-          {/* Close */}
-          <button
-            className="absolute top-6 right-6"
-            onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {/* Relative wrapper for background and content */}
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* Close Button */}
+            <button
+              className="absolute top-6 right-6 z-20"
+              onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-black"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
 
-          {/* Pulsing network bg */}
-          <img
-            src="/assets/network.svg"
-            alt="Network Background"
-            className="absolute inset-0 m-auto h-full w-full object-contain opacity-20 animate-pulse pointer-events-none"
-          />
+            {/* Pulsing network bg */}
+            <Image
+              src="/assets/network.svg"
+              alt="Network Background"
+              fill
+              className="object-contain opacity-20 animate-pulse pointer-events-none"
+            />
 
-          {/* Menu content */}
-          <div className="relative z-10 w-full max-w-md px-6">
-            <ul className="space-y-4 text-black">
-              {(['About', 'Products', 'Resources'] as Exclude<MenuKey, null>[]).map((key) => {
-                const isOpen = openMobileKey === key
-                return (
-                  <li key={key} className="border-b border-gray-100 pb-3">
-                    <button
-                      className="mx-auto flex items-center gap-2 text-2xl"
-                      onClick={() => setOpenMobileKey(isOpen ? null : key)}
-                      aria-expanded={isOpen}
-                    >
-                      <span>{key}</span>
-                      <ChevronDown
-                        size={18}
-                        className={`text-black transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                      />
-                    </button>
+            {/* Menu content */}
+            <div className="relative z-10 w-full max-w-md px-6">
+              <ul className="space-y-4 text-black">
+                {(['About', 'Products', 'Resources'] as Exclude<MenuKey, null>[]).map((key) => {
+                  const isOpen = openMobileKey === key
+                  return (
+                    <li key={key} className="border-b border-gray-100 pb-3">
+                      <button
+                        className="mx-auto flex items-center gap-2 text-2xl"
+                        onClick={() => setOpenMobileKey(isOpen ? null : key)}
+                        aria-expanded={isOpen}
+                      >
+                        <span>{key}</span>
+                        <ChevronDown
+                          size={18}
+                          className={`text-black transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        />
+                      </button>
 
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          key={`${key}-panel`}
-                          variants={accVariants}
-                          initial="initial"
-                          animate="animate"
-                          exit="exit"
-                          className="mt-3 space-y-3 pl-1"
-                        >
-                          {DROPDOWNS[key].map(({ name, href, icon }) => (
-                            <Link
-                              key={name}
-                              href={href}
-                              onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
-                              className="flex items-center gap-2 text-xl justify-center"
-                            >
-                              <Icon name={icon} />
-                              {name}
-                            </Link>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </li>
-                )
-              })}
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            key={`${key}-panel`}
+                            variants={accVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="mt-3 space-y-3 pl-1"
+                          >
+                            {DROPDOWNS[key].map(({ name, href, icon }) => (
+                              <Link
+                                key={name}
+                                href={href}
+                                onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
+                                className="flex items-center gap-2 text-xl justify-center"
+                              >
+                                <Icon name={icon} />
+                                {name}
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </li>
+                  )
+                })}
 
-              {/* Pricing */}
-              <li className="pt-2">
-                <Link href="/pricing" onClick={() => setMenuOpen(false)} className="text-2xl flex justify-center">
-                  Pricing
+                {/* Pricing */}
+                <li className="pt-2">
+                  <Link
+                    href="/pricing"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-2xl flex justify-center"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+              </ul>
+
+              {/* Auth buttons */}
+              <div className="flex justify-center items-center gap-4 mt-8 text-sm">
+                <Link href="#" className="text-black flex items-center h-full" onClick={() => setMenuOpen(false)}>
+                  Sign in
                 </Link>
-              </li>
-            </ul>
-
-            {/* Auth buttons */}
-            <div className="flex justify-center items-center gap-4 mt-8 text-sm">
-              <Link href="#" className="text-black flex items-center h-full" onClick={() => setMenuOpen(false)}>
-                Sign in
-              </Link>
-              <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
-                Get started
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+                <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
+                  Get started
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
