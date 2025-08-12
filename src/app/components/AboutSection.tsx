@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { FiCpu, FiEye, FiSettings, FiGlobe, FiZap } from "react-icons/fi"; // original icons
 
 const modules = [
