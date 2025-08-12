@@ -1,64 +1,151 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ChevronDown, Folder, Users, BookOpen, GitBranch, FileText } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
+
+
+type MenuKey = 'About' | 'Products' | 'Resources' | null
+
+const DROPDOWNS: Record<Exclude<MenuKey, null>, { name: string; href: string; icon?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }[]> = {
+  About: [
+    { name: 'Company', href: '/about/company', icon: 'folder' },
+    { name: 'Team', href: '/about/team', icon: 'users' },
+  ],
+  Products: [
+    { name: 'Cortex', href: '/product/cortex', icon: 'cortex' },
+  ],
+  Resources: [
+    { name: 'Docs', href: '/resources/docs', icon: 'book' },
+    { name: 'GitHub', href: 'https://github.com', icon: 'git' },
+    { name: 'Discord', href: 'https://discord.com', icon: 'file' },
+  ],
+}
+
+function Icon({ name }: { name?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }) {
+  if (!name) return <span className="w-4 h-4" />
+  if (name === 'cortex') return <Image src="/cortex-icon.svg" alt="Cortex" width={16} height={16} />
+  const common = { size: 16, className: 'text-black' } as const
+  switch (name) {
+    case 'folder': return <Folder {...common} />
+    case 'users':  return <Users {...common} />
+    case 'book':   return <BookOpen {...common} />
+    case 'git':    return <GitBranch {...common} />
+    case 'file':   return <FileText {...common} />
+  }
+}
+
+const ddVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.16, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: 8, transition: { duration: 0.12, ease: 'easeIn' } },
+}
+
+const accVariants: Variants = ddVariants
+// same motion for mobile accordion
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
-  const links = [
-    { name: 'About', href: '/about' },
-    { name: 'Products', href: '/product' },
-    { name: 'Resources', href: '#' },
-    { name: 'Pricing', href: '#' }
-  ]
+  // Desktop dropdown (hover with delay)
+  const [openKey, setOpenKey] = useState<MenuKey>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Mobile
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [openMobileKey, setOpenMobileKey] = useState<MenuKey>(null)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const onScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+  }
+  const scheduleClose = () => {
+    cancelClose()
+    closeTimer.current = setTimeout(() => setOpenKey(null), 150)
+  }
+
+  const desktopWrapper =
+    `hidden md:flex fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl ` +
+    `${scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white/40 backdrop-blur-sm'} ` +
+    `shadow border border-white/50 items-center justify-between font-sans transition duration-300`
 
   return (
     <>
-      {/* Desktop Navbar */}
-      <nav
-        className={`hidden md:flex fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl shadow transition duration-300 items-center justify-between font-sans ${
-          scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white/40 backdrop-blur-sm'
-        }`}
-      >
+      {/* DESKTOP NAV */}
+      <nav className={desktopWrapper}>
         {/* Left: Logo */}
-        <div className="flex items-center">
-         <img src="/assets/spryntr.svg" alt="Spryntr Logo" className="h-6 md:h-8" />
+        <Link href="/" className="flex items-center">
+          <img src="/assets/spryntr.svg" alt="Spryntr Logo" className="h-6 md:h-8" />
+        </Link>
 
-        </div>
+        {/* Center: Dropdown links */}
+        <ul className="flex items-center gap-8 text-sm relative">
+          {(['About', 'Products', 'Resources'] as Exclude<MenuKey, null>[]).map((key) => (
+            <li
+              key={key}
+              className="relative"
+              onMouseEnter={() => { cancelClose(); setOpenKey(key) }}
+              onMouseLeave={scheduleClose}
+            >
+              <button
+                className="flex items-center gap-1 text-black"
+                onFocus={() => setOpenKey(key)}
+                onBlur={scheduleClose}
+              >
+                {key} <ChevronDown size={14} className="text-black" />
+              </button>
 
-        {/* Center: Nav Links */}
-        <ul className="flex items-center gap-8 text-sm">
-          {links.map((link) => (
-            <li key={link.name} className="flex items-center">
-              <Link href={link.href} className="text-black">
-                {link.name}
-              </Link>
-              {(link.name === 'About' || link.name === 'Products') && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 ml-1 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
+              <AnimatePresence>
+                {openKey === key && (
+                  <motion.div
+                    key={`${key}-menu`}
+                    variants={ddVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 px-3 z-50 pointer-events-auto"
+                    onMouseEnter={cancelClose}
+                    onMouseLeave={scheduleClose}
+                    onFocus={cancelClose}
+                    onBlur={scheduleClose}
+                  >
+                    {DROPDOWNS[key].map(({ name, href, icon }) => (
+                      <Link
+                        key={name}
+                        href={href}
+                        className="flex items-center gap-2 px-2 py-2 text-sm text-black hover:bg-gray-100 rounded"
+                        onClick={() => setOpenKey(null)}
+                      >
+                        <Icon name={icon} />
+                        {name}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </li>
           ))}
+
+          {/* Pricing – no dropdown */}
+          <li>
+            <Link href="/pricing" className="text-black">
+              Pricing
+            </Link>
+          </li>
         </ul>
 
-        {/* Right: Auth Buttons */}
+        {/* Right: Auth */}
         <div className="flex items-center gap-4 text-sm">
           <Link href="#" className="text-black">
             Sign in
@@ -79,14 +166,15 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Navbar */}
+      {/* MOBILE NAV BAR */}
       <nav
-        className={`md:hidden fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl shadow transition duration-300 flex items-center justify-between font-sans ${
-          scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white/40 backdrop-blur-sm'
-        }`}
+        className={
+          `md:hidden fixed top-4 left-4 right-4 z-50 p-4 rounded-2xl shadow ` +
+          `${scrolled ? 'bg-white/80 backdrop-blur-md' : 'bg-white/40 backdrop-blur-sm'} ` +
+          `flex items-center justify-between font-sans transition duration-300 border border-white/50`
+        }
       >
         <Image src="/assets/logo.svg" alt="Logo" width={24} height={24} />
-
         <button onClick={() => setMenuOpen(true)}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -101,65 +189,94 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile Fullscreen Menu */}
+      {/* MOBILE FULLSCREEN MENU */}
       {menuOpen && (
-        <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-2xl font-medium space-y-8">
-          {/* Close Button */}
+        <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-2xl font-medium">
+          {/* Close */}
           <button
             className="absolute top-6 right-6"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-black"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-         {/* Network SVG (centered pulsing bg) */}
-<img
-  src="/assets/network.svg"
-  alt="Network Background"
-  className="absolute inset-0 m-auto h-full w-full object-contain opacity-20 animate-pulse pointer-events-none"
-/>
+          {/* Pulsing network bg */}
+          <img
+            src="/assets/network.svg"
+            alt="Network Background"
+            className="absolute inset-0 m-auto h-full w-full object-contain opacity-20 animate-pulse pointer-events-none"
+          />
 
+          {/* Menu content */}
+          <div className="relative z-10 w-full max-w-md px-6">
+            <ul className="space-y-4 text-black">
+              {(['About', 'Products', 'Resources'] as Exclude<MenuKey, null>[]).map((key) => {
+                const isOpen = openMobileKey === key
+                return (
+                  <li key={key} className="border-b border-gray-100 pb-3">
+                    <button
+                      className="mx-auto flex items-center gap-2 text-2xl"
+                      onClick={() => setOpenMobileKey(isOpen ? null : key)}
+                      aria-expanded={isOpen}
+                    >
+                      <span>{key}</span>
+                      <ChevronDown
+                        size={18}
+                        className={`text-black transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
 
-          {/* Menu Links */}
-          <ul className="z-10 space-y-6 text-black text-3xl">
-          {/* Auth buttons - Mobile */}
-<div className="flex justify-center items-center gap-4 mt-6 text-sm">
-  <Link href="#" className="text-black flex items-center h-full">
-    Sign in
-  </Link>
-  <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
-    Get started
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4 ml-2 text-white"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-  </button>
-</div>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key={`${key}-panel`}
+                          variants={accVariants}
+                          initial="initial"
+                          animate="animate"
+                          exit="exit"
+                          className="mt-3 space-y-3 pl-1"
+                        >
+                          {DROPDOWNS[key].map(({ name, href, icon }) => (
+                            <Link
+                              key={name}
+                              href={href}
+                              onClick={() => { setMenuOpen(false); setOpenMobileKey(null) }}
+                              className="flex items-center gap-2 text-xl justify-center"
+                            >
+                              <Icon name={icon} />
+                              {name}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </li>
+                )
+              })}
 
-
-            {links.map((link) => (
-              <li key={link.name}>
-                <Link href={link.href} onClick={() => setMenuOpen(false)}>
-                  {link.name}
+              {/* Pricing */}
+              <li className="pt-2">
+                <Link href="/pricing" onClick={() => setMenuOpen(false)} className="text-2xl flex justify-center">
+                  Pricing
                 </Link>
               </li>
-            ))}
-          </ul>
+            </ul>
+
+            {/* Auth buttons */}
+            <div className="flex justify-center items-center gap-4 mt-8 text-sm">
+              <Link href="#" className="text-black flex items-center h-full" onClick={() => setMenuOpen(false)}>
+                Sign in
+              </Link>
+              <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
+                Get started
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

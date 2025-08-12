@@ -1,169 +1,198 @@
-"use client"
+"use client";
 
-import { useRef, useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiCpu, FiEye, FiSettings, FiGlobe, FiZap } from "react-icons/fi"; // original icons
 
 const modules = [
-  {
-    title: "Organizational Intelligence",
-    description:
-      "Spryntr transforms the way institutions think and operate by deploying a digital brain across the organization. This isn't just software—it's a mission control system embedded into your daily operations. Cortex, our unified intelligence platform, serves as the central nervous system that connects your teams, tools, data, and workflows into one cohesive, responsive engine. It’s designed to think with you, learn with you, and evolve as your organization grows in scale and complexity.",
+  { 
+    icon: <FiCpu className="text-xl" />, 
+    title: "Organizational Intelligence", 
+    description: "One brain for your org—teams, tools, and data acting as a single system." 
   },
-  {
-    title: "Real-Time Clarity",
-    description:
-      "Modern organizations operate in volatile, data-heavy environments where delays or blind spots cost lives, opportunities, or resources. Spryntr provides real-time visibility into every system, dataset, and decision point. We eliminate the lag between observation and action by giving you a unified, live view of your entire ecosystem—so insights are never outdated, and decision-makers are never in the dark.",
+  { 
+    icon: <FiEye className="text-xl" />, 
+    title: "Real-Time Clarity", 
+    description: "Live views of every process and dataset. No lag. No blind spots." 
   },
-  {
-    title: "Workflow Automation",
-    description:
-      "From mission-critical operations to routine approvals, Spryntr automates what slows you down. We enable teams to build powerful, no-code workflows that execute across departments, tools, and data layers—automatically. Whether you’re routing intelligence to a response unit, transforming datasets for analysis, or syncing information across platforms, Spryntr makes operations fluid, repeatable, and scalable.",
+  { 
+    icon: <FiSettings className="text-xl" />, 
+    title: "Workflow Automation", 
+    description: "No-code workflows across departments—reliable, repeatable, fast." 
   },
-  {
-    title: "Holistic Visibility",
-    description:
-      "Siloed systems lead to fragmented decisions. Spryntr unifies your organization’s view—connecting the dots between infrastructure, people, assets, and outcomes. Using digital twin modeling and relationship mapping, we help you understand not just what’s happening, but how and why. This bird’s-eye perspective enables proactive planning, risk mitigation, and systems thinking at every level.",
+  { 
+    icon: <FiGlobe className="text-xl" />, 
+    title: "Holistic Visibility", 
+    description: "See people, assets, and outcomes in context with maps and digital twins." 
   },
-  {
-    title: "Instant Response",
-    description:
-      "In high-compliance, high-stakes environments, delay is defeat. Spryntr is engineered for urgency. By embedding logic, alerts, and automation directly into your infrastructure, we empower teams to respond to opportunities, crises, or shifting priorities instantly. Whether you're managing a national emergency or reallocating resources in real time, Spryntr enables decisive action—when it matters most.",
+  { 
+    icon: <FiZap className="text-xl" />, 
+    title: "Instant Response", 
+    description: "Embed alerts and logic so teams act immediately when priorities shift." 
   },
-]
+];
 
 export default function AboutSection() {
-  const containerRef = useRef(null)
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [hasTyped, setHasTyped] = useState(false);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+  const headingText = "Smarter Solutions for Faster & Clearer Decisions";
 
+  // Trigger animation when section is in view
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute("data-index"))
-            setActiveIndex(index)
-          }
-        })
+      ([entry]) => {
+        if (entry.isIntersecting && !hasTyped) {
+          setHasTyped(true);
+        }
       },
-      {
-        root: containerRef.current,
-        threshold: 0.6,
-        rootMargin: "0px",
-      }
-    )
+      { threshold: 0.3 }
+    );
 
-    const cards = document.querySelectorAll(".about-card")
-    cards.forEach((card) => observer.observe(card))
+    if (sectionRef.current) observer.observe(sectionRef.current);
 
-    return () => cards.forEach((card) => observer.unobserve(card))
-  }, [])
+    return () => {
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
+    };
+  }, [hasTyped]);
 
-  const scrollToIndex = (index: number) => {
-    const card = document.querySelector(`[data-index='${index}']`)
-    card?.scrollIntoView({ behavior: "smooth", inline: "start" })
-  }
+  // Typewriter effect once triggered
+  useEffect(() => {
+    if (!hasTyped) return;
+    let i = 0;
+    const timer = setInterval(() => {
+      setTypedText(headingText.slice(0, i + 1));
+      i++;
+      if (i === headingText.length) clearInterval(timer);
+    }, 100); // typing speed
+
+    return () => clearInterval(timer);
+  }, [hasTyped]);
+
+  // Track active tab
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const idx = Number(e.target.getAttribute("data-index"));
+            setActiveIndex(idx);
+          }
+        });
+      },
+      { root, threshold: 0.6 }
+    );
+    root.querySelectorAll(".about-card").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const scrollToIndex = (i: number) => {
+    containerRef.current
+      ?.querySelector(`[data-index='${i}']`)
+      ?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  };
 
   return (
-    <section className="bg-[#FCFCFD] py-16 px-4 md:px-8">
-      <div className="text-right max-w-3xl ml-auto mr-4 md:mr-10 mb-12">
-        <h2 className="text-4xl md:text-6xl font-bold leading-tight">
-          Finding solutions to <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-black to-gray-600">
-            data infrastructure in Africa
-          </span>
+    <section
+      ref={sectionRef}
+      className="relative z-0 bg-[#FCFCFD] py-16 px-4 md:px-8 overflow-visible"
+      style={{ isolation: "isolate" }}
+    >
+      {/* Heading + paragraph */}
+      <motion.div
+        className="text-center max-w-4xl mx-auto mb-10"
+        initial={{ opacity: 0, y: 50 }}
+        animate={hasTyped ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <h2
+          className="text-3xl md:text-5xl font-bold leading-tight tracking-tight"
+          style={{ fontFamily: "'Fira Code', monospace" }}
+        >
+          {typedText}
         </h2>
-        <p className="mt-4 text-gray-600 text-sm md:text-base leading-relaxed">
-          Spryntr is the digital backbone for modern organizations—unifying data,
-          operations, and intelligence into one scalable platform.
+        <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed">
+          From scattered systems to slow decisions—solve it all with smarter, faster, data-powered solutions.
         </p>
-      </div>
+      </motion.div>
 
-      <ul className="hidden md:flex justify-center gap-6 mb-6 overflow-x-auto whitespace-nowrap border-b border-gray-200">
-        {modules.map((mod, index) => (
+      {/* Tabs */}
+      <ul className="relative hidden md:flex justify-center gap-8 mb-6 whitespace-nowrap border-b border-gray-200 z-[1]">
+        {modules.map((m, i) => (
           <li
-            key={index}
-            onClick={() => scrollToIndex(index)}
-            className={`cursor-pointer pb-2 px-1 border-b-2 transition duration-300 ${
-              activeIndex === index
-                ? "border-black font-semibold"
-                : "border-transparent text-gray-500"
+            key={i}
+            onClick={() => scrollToIndex(i)}
+            className={`relative cursor-pointer pb-3 px-1 transition-colors ${
+              activeIndex === i ? "text-black font-semibold" : "text-gray-500"
             }`}
           >
-            {mod.title}
+            {m.title}
+            {activeIndex === i && (
+              <motion.div
+                layoutId="about-underline"
+                className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-black shadow-[0_0_8px_rgba(0,0,0,0.6)]"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
           </li>
         ))}
       </ul>
 
-      <div className="md:hidden px-4 mb-4">
-        <h3 className="text-lg font-semibold text-black border-b-2 border-black inline-block">
-          {modules[activeIndex].title}
-        </h3>
-      </div>
-
+      {/* Cards */}
       <div
         ref={containerRef}
-        className="flex overflow-x-auto space-x-10 scroll-smooth snap-x snap-mandatory pb-4 no-scrollbar mx-auto"
+        className="relative z-[10] flex overflow-x-auto space-x-8 md:space-x-10 scroll-smooth snap-x snap-mandatory pb-6 no-scrollbar mx-auto overflow-y-hidden"
       >
-        {modules.map((mod, index) => (
-          <motion.div
-            key={index}
-            data-index={index}
-            className={`group about-card snap-start shrink-0 w-[90vw] md:w-[60vw] bg-white p-6 rounded-xl border border-gray-200 transition-all duration-300
-              ${isMobile ? (hoveredIndex === index ? "scale-105 shadow-lg" : "shadow") : "hover:scale-105 hover:shadow-lg shadow"}
-            `}
-            onTouchStart={() => setHoveredIndex(index)}
-            onTouchEnd={() => setTimeout(() => setHoveredIndex(null), 300)}
-            initial={{ opacity: 0, y: 30 }}
+        {modules.map((m, i) => (
+          <motion.article
+            key={i}
+            data-index={i}
+            className="about-card snap-start shrink-0 w-[88vw] md:w-[58vw]
+              relative z-[20] rounded-2xl p-6 md:p-8
+              bg-white/70 backdrop-blur-xl
+              border border-black/10
+              shadow-[0_12px_32px_-16px_rgba(0,0,0,0.35)]
+              transition-all duration-300
+              hover:rotate-[1.5deg] hover:scale-105 hover:shadow-[0_22px_50px_-18px_rgba(0,0,0,0.45)]
+              group"
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.06 }}
           >
-            <button
-              className={`mb-4 flex items-center gap-2 text-sm border px-4 py-2 rounded transition-all duration-300 ${
-                isMobile
-                  ? hoveredIndex === index
-                    ? "bg-black text-white border-black"
-                    : "border-black"
-                  : "group-hover:bg-black group-hover:text-white group-hover:border-black border-black"
-              }`}
-            >
-              Learn more
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`h-4 w-4 transform transition-transform duration-300 ${
-                  isMobile
-                    ? hoveredIndex === index
-                      ? "translate-x-1 text-white"
-                      : ""
-                    : "group-hover:translate-x-1 group-hover:text-white"
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="relative z-[1] flex items-center gap-3 mb-3">
+              {m.icon}
+              <h3 className="text-xl font-semibold">{m.title}</h3>
+            </div>
+            <p className="text-gray-700 text-sm md:text-[15px] leading-relaxed">
+              {m.description}
+            </p>
+            <div className="mt-6">
+              <Link
+                href="/cortex"
+                className="group/btn inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black text-white px-4 py-2 text-sm transition
+                shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]
+                hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.5)] active:scale-95"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-
-            <h3 className="text-2xl font-semibold mb-2">{mod.title}</h3>
-            <p className="text-gray-600 text-sm">{mod.description}</p>
-          </motion.div>
+                Learn more
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </motion.article>
         ))}
       </div>
     </section>
-  )
+  );
 }
