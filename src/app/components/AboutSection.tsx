@@ -74,23 +74,35 @@ export default function AboutSection() {
   }, [hasTyped]);
 
   // Track active tab
-  useEffect(() => {
-    const root = containerRef.current;
-    if (!root) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const idx = Number(e.target.getAttribute("data-index"));
-            setActiveIndex(idx);
-          }
-        });
-      },
-      { root, threshold: 0.6 }
-    );
-    root.querySelectorAll(".about-card").forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+  // make sure you have: const containerRef = useRef<HTMLDivElement | null>(null)
+
+useEffect(() => {
+  const root = containerRef.current;           // ✅ cache the ref once
+  if (!root) return;
+
+  const cards = Array.from(root.querySelectorAll('.about-card')); // ✅ cache observed nodes
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          const idx = Number(e.target.getAttribute('data-index'));
+          setActiveIndex(idx);
+        }
+      });
+    },
+    { root, threshold: 0.6 }
+  );
+
+  cards.forEach((el) => io.observe(el));
+
+  return () => {
+    // ✅ use cached references, not containerRef.current
+    cards.forEach((el) => io.unobserve(el));
+    io.disconnect();
+  };
+}, []); // keep deps empty since we're caching references
+
 
   const scrollToIndex = (i: number) => {
     containerRef.current
