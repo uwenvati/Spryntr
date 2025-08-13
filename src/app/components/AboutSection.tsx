@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FiCpu, FiEye, FiSettings, FiGlobe, FiZap } from "react-icons/fi"; // original icons
+import { FiCpu, FiEye, FiSettings, FiGlobe, FiZap } from "react-icons/fi";
 
 const modules = [
   { 
@@ -44,6 +44,9 @@ export default function AboutSection() {
 
   // Trigger animation when section is in view
   useEffect(() => {
+    const currentSection = sectionRef.current; // ✅ cache ref
+    if (!currentSection) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasTyped) {
@@ -53,10 +56,10 @@ export default function AboutSection() {
       { threshold: 0.3 }
     );
 
-    if (sectionRef.current) observer.observe(sectionRef.current);
+    observer.observe(currentSection);
 
     return () => {
-      if (sectionRef.current) observer.unobserve(sectionRef.current);
+      observer.unobserve(currentSection); // ✅ use cached ref in cleanup
     };
   }, [hasTyped]);
 
@@ -68,41 +71,37 @@ export default function AboutSection() {
       setTypedText(headingText.slice(0, i + 1));
       i++;
       if (i === headingText.length) clearInterval(timer);
-    }, 100); // typing speed
+    }, 100);
 
     return () => clearInterval(timer);
   }, [hasTyped]);
 
   // Track active tab
-  // make sure you have: const containerRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const root = containerRef.current; // ✅ cache ref
+    if (!root) return;
 
-useEffect(() => {
-  const root = containerRef.current;           // ✅ cache the ref once
-  if (!root) return;
+    const cards = Array.from(root.querySelectorAll(".about-card"));
 
-  const cards = Array.from(root.querySelectorAll('.about-card')); // ✅ cache observed nodes
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const idx = Number(e.target.getAttribute("data-index"));
+            setActiveIndex(idx);
+          }
+        });
+      },
+      { root, threshold: 0.6 }
+    );
 
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const idx = Number(e.target.getAttribute('data-index'));
-          setActiveIndex(idx);
-        }
-      });
-    },
-    { root, threshold: 0.6 }
-  );
+    cards.forEach((el) => io.observe(el));
 
-  cards.forEach((el) => io.observe(el));
-
-  return () => {
-    // ✅ use cached references, not containerRef.current
-    cards.forEach((el) => io.unobserve(el));
-    io.disconnect();
-  };
-}, []); // keep deps empty since we're caching references
-
+    return () => {
+      cards.forEach((el) => io.unobserve(el)); // ✅ cleanup with cached nodes
+      io.disconnect();
+    };
+  }, []);
 
   const scrollToIndex = (i: number) => {
     containerRef.current
