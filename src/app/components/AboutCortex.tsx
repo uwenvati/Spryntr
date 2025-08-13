@@ -1,6 +1,8 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -8,53 +10,84 @@ function useIsMobile() {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   return isMobile
+}
+
+// Accept possibly-null refs so TS chills 🙂
+function useInView(ref: React.RefObject<HTMLElement | null>, rootMargin = '0px') {
+  const [isIntersecting, setIntersecting] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setIntersecting(entry.isIntersecting),
+      { rootMargin }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ref, rootMargin])
+
+  return isIntersecting
 }
 
 function ScrollingModules() {
   const isMobile = useIsMobile()
   const [hovered, setHovered] = useState<number | null>(null)
 
+  // declare before useInView
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const inView = useInView(containerRef, '-50px')
+
   const images = [
-    "module1.png", "module2.png", "module3.png", "module4.png", "module5.png",
-    "module6.png", "module7.png", "module8.png", "module9.png", "module10.png", "module11.png",
+    'module1.png', 'module2.png', 'module3.png', 'module4.png', 'module5.png',
+    'module6.png', 'module7.png', 'module8.png', 'module9.png', 'module10.png', 'module11.png',
   ]
 
   const duplicated = [...images, ...images]
 
   return (
-    <div className="overflow-hidden mt-10 relative rounded-2xl">
-      <div className="flex gap-4 whitespace-nowrap animate-scroll-loop hover:[animation-play-state:paused] w-max">
+    <div ref={containerRef} className="overflow-hidden mt-10 relative rounded-2xl">
+      <div
+        className={`flex gap-4 whitespace-nowrap w-max ${
+          inView ? 'animate-scroll-loop' : ''
+        } hover:[animation-play-state:paused]`}
+      >
         {duplicated.map((src, index) => {
           const isActive = isMobile ? hovered === index : false
+          const isFirstFew = index < 4 // small preload boost
 
           return (
-            <div
+            <Link
+              href="#"
               key={`${src}-${index}`}
               className={`flex-shrink-0 w-48 md:w-52 h-52 rounded-xl flex items-center justify-center p-4 transition-transform duration-300
-                ${isActive ? "scale-105" : ""}
-                ${!isMobile ? "hover:scale-105" : ""}
+                ${isActive ? 'scale-105' : ''}
+                ${!isMobile ? 'hover:scale-105' : ''}
               `}
               onTouchStart={() => isMobile && setHovered(index)}
               onTouchEnd={() => isMobile && setTimeout(() => setHovered(null), 300)}
             >
-              <img
+              <Image
                 src={`/modules/${src}`}
                 alt={`Module ${index + 1}`}
+                width={208}
+                height={208}
                 className="h-full w-full object-contain"
+                priority={isFirstFew}
+                loading={isFirstFew ? 'eager' : 'lazy'}
               />
-            </div>
+            </Link>
           )
         })}
       </div>
     </div>
   )
 }
-
 
 export default function AboutCortex() {
   const isMobile = useIsMobile()
@@ -120,10 +153,13 @@ export default function AboutCortex() {
 
         {/* Quote Card */}
         <div className="bg-white mt-10 px-6 py-6 rounded-xl border border-gray-300 max-w-3xl mx-auto">
-          <img
+          <Image
             src="/brain-icon.svg"
             alt="Brain Icon"
-            className="w-6 h-6 mx-auto mb-2"
+            width={24}
+            height={24}
+            className="mx-auto mb-2"
+            priority
           />
           <p className="text-base text-gray-600 italic">
             &ldquo;Intelligence without context is just computation. Spryntr provides the context
