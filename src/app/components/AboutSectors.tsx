@@ -57,7 +57,6 @@ export default function AboutSectors() {
       window.removeEventListener("resize", onResize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    
   }, []);
 
   const scrollTo = (i: number) => {
@@ -67,13 +66,12 @@ export default function AboutSectors() {
   const goNext = () => scrollTo(Math.min(sectors.length - 1, active + 1));
 
   return (
-    <section className="bg-[#FCFCFD] py-14 px-4 md:px-8">
+    <section className="bg-[#FCFCFD] py-14 px-0 md:px-8 overflow-x-hidden">
       {/* Main section heading */}
-      <div className="max-w-5xl mx-auto text-center mb-4 md:mb-8">
+      <div className="max-w-5xl mx-auto text-center mb-4 md:mb-8 px-4">
         <h2 className="text-3xl md:text-6xl font-extrabold leading-tight tracking-tight text-black">
           Built for Complexity Across Sectors
         </h2>
-        {/* Hide long blurb on mobile to keep focus/space */}
         <p className="hidden md:block mt-5 text-gray-700 max-w-3xl mx-auto md:text-lg leading-relaxed">
           <span className="font-semibold text-gray-900">Data challenges are everywhere.</span>{" "}
           From safety to strategy, every sector needs faster insights and smarter decisions.
@@ -81,8 +79,8 @@ export default function AboutSectors() {
         </p>
       </div>
 
-      {/* Single active sector title with shimmer (already added earlier) */}
-      <div className="text-center mb-4 md:mb-6">
+      {/* Single active sector title with shimmer */}
+      <div className="text-center mb-4 md:mb-6 px-4">
         <div className="inline-block relative">
           <span className="text-base md:text-2xl font-extrabold text-black">
             {sectors[active].title}
@@ -114,44 +112,42 @@ export default function AboutSectors() {
         </button>
 
         {/* Slides */}
-<div
-  ref={containerRef}
-  onScroll={onScroll}
-  className="relative mx-0 md:mx-12 flex overflow-x-auto space-x-3 md:space-x-6 scroll-smooth snap-x snap-mandatory no-scrollbar scroll-px-3 md:scroll-px-12"
-  aria-label="Sectors carousel"
->
-  {sectors.map((s, i) => (
-    <div
-      key={s.title}
-      ref={(el: HTMLDivElement | null) => { cardRefs.current[i] = el }}
-      className="snap-center shrink-0 
-                 w-[88vw] sm:w-[85vw] md:w-[960px]  /* smaller on mobile */
-                 rounded-xl overflow-hidden border border-black/10 bg-black/5"
-    >
-      <div className="relative aspect-[4/3] md:aspect-[16/9]"> {/* taller ratio for better fit */}
-        <Image
-          src={s.img}
-          alt={s.title}
-          fill
-          priority={i === 0}
-          sizes="(max-width: 640px) 88vw, (max-width: 768px) 85vw, 960px"
-          className="object-cover"
-        />
-        {/* bottom gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-20 md:h-40 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-        {/* text overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-3 md:p-8 text-white">
-          <p className="text-[12px] sm:text-sm md:text-base leading-snug md:leading-relaxed text-white/90">
-            {s.description}
-          </p>
+        <div
+          ref={containerRef}
+          onScroll={onScroll}
+          className="relative mx-0 md:mx-12 flex overflow-x-auto space-x-3 md:space-x-6 scroll-smooth snap-x snap-mandatory no-scrollbar scroll-px-4 md:scroll-px-12
+                     overscroll-x-contain touch-pan-y"
+          aria-label="Sectors carousel"
+        >
+          {sectors.map((s, i) => (
+            <div
+              key={s.title}
+              ref={(el: HTMLDivElement | null) => { cardRefs.current[i] = el }}
+              className="snap-center shrink-0 w-[86vw] sm:w-[84vw] md:w-[960px] rounded-xl overflow-hidden border border-black/10 bg-black/5"
+            >
+              <div className="relative aspect-[4/3] md:aspect-[16/9]">
+                <Image
+                  src={s.img}
+                  alt={s.title}
+                  fill
+                  priority={i === 0}
+                  sizes="(max-width: 640px) 86vw, (max-width: 768px) 84vw, 960px"
+                  className="object-cover"
+                />
+                {/* bottom gradient */}
+                <div className="absolute inset-x-0 bottom-0 h-24 md:h-40 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                {/* text overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-3 md:p-8 text-white">
+                  <p className="text-[12.5px] sm:text-sm md:text-base leading-snug md:leading-relaxed text-white/90">
+                    {s.description}
+                  </p>
+                </div>
+              </div>
+              {/* subtle active indicator */}
+              <div className={`h-[3px] ${active === i ? "bg-black" : "bg-transparent"}`} />
+            </div>
+          ))}
         </div>
-      </div>
-      {/* subtle active indicator */}
-      <div className={`h-[3px] ${active === i ? "bg-black" : "bg-transparent"}`} />
-    </div>
-  ))}
-</div>
-
       </div>
     </section>
   );

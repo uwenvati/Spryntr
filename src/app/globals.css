@@ -1,4 +1,10 @@
 @import "tailwindcss";
+
+html, body {
+  overflow-x: hidden;
+}
+
+
 /* ===== Hero animations ===== */
 @keyframes fade-in {
   0% { opacity: 0; transform: translateY(12px); }
@@ -280,6 +286,45 @@
   .animate-scroll-loop-slow { animation: none; }
   .ring-sheen { animation: none; }
 }
+
+/* Heading sheen (slow & bright) */
+@keyframes sprShimmerRL {
+  0%   { transform: translateX(120%); }
+  100% { transform: translateX(-120%); }
+}
+.spr-heading-shimmer-slow {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+  animation: sprShimmerRL 2.3s linear infinite;
+}
+
+/* Mobile marquee (slow, smooth) */
+@keyframes scrollLoopSlow {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* list duplicated */
+}
+.animate-scroll-loop-slow {
+  animation: scrollLoopSlow 20s linear infinite;
+}
+
+/* Rotating sheen around black ring */
+@keyframes ringSpin {
+  to { transform: rotate(360deg); }
+}
+.ring-sheen {
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0) 0deg,
+    rgba(255,255,255,0.9) 30deg,
+    rgba(255,255,255,0) 60deg
+  );
+  animation: ringSpin 4s linear infinite; /* slower, subtler */
+  -webkit-mask: radial-gradient(circle, transparent calc(100% - 3px), black 0);
+  mask: radial-gradient(circle, transparent calc(100% - 3px), black 0);
+  border-radius: 9999px;
+}
+
+
 
 /*
 :root {
