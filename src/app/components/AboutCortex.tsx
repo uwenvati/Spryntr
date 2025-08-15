@@ -44,7 +44,7 @@ const modules: Mod[] = [
 ]
 
 function ScrollingModules() {
-  const isMobile = useIsMobile()
+  //const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const inView = useInView(containerRef, '-50px')
   const [paused, setPaused] = useState(false)

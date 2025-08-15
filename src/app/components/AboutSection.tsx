@@ -103,7 +103,7 @@ export default function AboutSection() {
       window.removeEventListener("resize", onWinResize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const scrollToIndex = (i: number) => {

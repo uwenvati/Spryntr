@@ -57,7 +57,7 @@ export default function AboutSectors() {
       window.removeEventListener("resize", onResize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const scrollTo = (i: number) => {
