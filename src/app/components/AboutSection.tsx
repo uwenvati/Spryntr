@@ -1,185 +1,181 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { FiCpu, FiEye, FiSettings, FiGlobe, FiZap } from "react-icons/fi";
 
 const modules = [
-  { 
-    icon: <FiCpu className="text-xl" />, 
-    title: "Organizational Intelligence", 
-    description: "One brain for your org—teams, tools, and data acting as a single system." 
+  {
+    icon: <FiCpu className="text-xl" />,
+    title: "Organizational Intelligence",
+    description:
+      "One brain for your org—teams, tools, and data acting as a single system.",
   },
-  { 
-    icon: <FiEye className="text-xl" />, 
-    title: "Real-Time Clarity", 
-    description: "Live views of every process and dataset. No lag. No blind spots." 
+  {
+    icon: <FiEye className="text-xl" />,
+    title: "Real-Time Clarity",
+    description:
+      "Live views of every process and dataset. No lag. No blind spots.",
   },
-  { 
-    icon: <FiSettings className="text-xl" />, 
-    title: "Workflow Automation", 
-    description: "No-code workflows across departments—reliable, repeatable, fast." 
+  {
+    icon: <FiSettings className="text-xl" />,
+    title: "Workflow Automation",
+    description:
+      "No-code workflows across departments—reliable, repeatable, fast.",
   },
-  { 
-    icon: <FiGlobe className="text-xl" />, 
-    title: "Holistic Visibility", 
-    description: "See people, assets, and outcomes in context with maps and digital twins." 
+  {
+    icon: <FiGlobe className="text-xl" />,
+    title: "Holistic Visibility",
+    description:
+      "See people, assets, and outcomes in context with maps and digital twins.",
   },
-  { 
-    icon: <FiZap className="text-xl" />, 
-    title: "Instant Response", 
-    description: "Embed alerts and logic so teams act immediately when priorities shift." 
+  {
+    icon: <FiZap className="text-xl" />,
+    title: "Instant Response",
+    description:
+      "Embed alerts and logic so teams act immediately when priorities shift.",
   },
 ];
 
 export default function AboutSection() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [typedText, setTypedText] = useState("");
-  const [hasTyped, setHasTyped] = useState(false);
-  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const rafRef = useRef<number | null>(null);
 
-  const headingText = "Smarter Solutions for Faster & Clearer Decisions";
+  // keep refs array length in sync with modules
+  const cardCount = modules.length;
+  cardRefs.current = useMemo(
+    () =>
+      Array(cardCount)
+        .fill(null)
+        .map((_, i) => cardRefs.current[i] ?? null),
+    [cardCount]
+  );
 
-  // Trigger animation when section is in view
-  useEffect(() => {
-    const currentSection = sectionRef.current; // ✅ cache ref
-    if (!currentSection) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasTyped) {
-          setHasTyped(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    observer.observe(currentSection);
-
-    return () => {
-      observer.unobserve(currentSection); // ✅ use cached ref in cleanup
-    };
-  }, [hasTyped]);
-
-  // Typewriter effect once triggered
-  useEffect(() => {
-    if (!hasTyped) return;
-    let i = 0;
-    const timer = setInterval(() => {
-      setTypedText(headingText.slice(0, i + 1));
-      i++;
-      if (i === headingText.length) clearInterval(timer);
-    }, 100);
-
-    return () => clearInterval(timer);
-  }, [hasTyped]);
-
-  // Track active tab
-  useEffect(() => {
-    const root = containerRef.current; // ✅ cache ref
+  // compute which card is closest to container center
+  const updateActiveIndex = () => {
+    const root = containerRef.current;
     if (!root) return;
 
-    const cards = Array.from(root.querySelectorAll(".about-card"));
+    const rootRect = root.getBoundingClientRect();
+    const rootCenterX = rootRect.left + rootRect.width / 2;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const idx = Number(e.target.getAttribute("data-index"));
-            setActiveIndex(idx);
-          }
-        });
-      },
-      { root, threshold: 0.6 }
-    );
+    let bestIdx = 0;
+    let bestDist = Number.POSITIVE_INFINITY;
 
-    cards.forEach((el) => io.observe(el));
+    for (let i = 0; i < cardRefs.current.length; i++) {
+      const el = cardRefs.current[i];
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const cardCenterX = r.left + r.width / 2;
+      const dist = Math.abs(cardCenterX - rootCenterX);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    setActiveIndex(bestIdx);
+  };
+
+  // rAF scroll handler
+  const onScroll = () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(updateActiveIndex);
+  };
+
+  // recompute on mount & resize
+  useEffect(() => {
+    updateActiveIndex();
+
+    // Guard in case ResizeObserver is not available (older browsers)
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => updateActiveIndex());
+      if (containerRef.current) ro.observe(containerRef.current);
+    }
+
+    const onWinResize = () => updateActiveIndex();
+    window.addEventListener("resize", onWinResize);
 
     return () => {
-      cards.forEach((el) => io.unobserve(el)); // ✅ cleanup with cached nodes
-      io.disconnect();
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", onWinResize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const scrollToIndex = (i: number) => {
-    containerRef.current
-      ?.querySelector(`[data-index='${i}']`)
-      ?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    const el = cardRefs.current[i];
+    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   };
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative z-0 bg-[#FCFCFD] py-16 px-4 md:px-8 overflow-visible"
-      style={{ isolation: "isolate" }}
-    >
-      {/* Heading + paragraph */}
-      <motion.div
-        className="text-center max-w-4xl mx-auto mb-10"
-        initial={{ opacity: 0, y: 50 }}
-        animate={hasTyped ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <h2
-          className="text-3xl md:text-5xl font-bold leading-tight tracking-tight"
-          style={{ fontFamily: "'Fira Code', monospace" }}
-        >
-          {typedText}
+    <section className="relative z-0 bg-[#FCFCFD] py-16 px-4 md:px-8 overflow-visible">
+      {/* Heading + paragraph (right-aligned, same font as Hero, no animation) */}
+      <div className="max-w-4xl ml-auto text-right mb-10">
+        <h2 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight text-black">
+          Smarter Solutions for <br />
+           Faster & Clearer <br />
+           Decisions
         </h2>
         <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed">
-          From scattered systems to slow decisions—solve it all with smarter, faster, data-powered solutions.
+          From scattered systems to slow decisions—solve it all with smarter, faster,
+          data-powered solutions.
         </p>
-      </motion.div>
+      </div>
 
-      {/* Tabs */}
-      <ul className="relative hidden md:flex justify-center gap-8 mb-6 whitespace-nowrap border-b border-gray-200 z-[1]">
-        {modules.map((m, i) => (
-          <li
-            key={i}
-            onClick={() => scrollToIndex(i)}
-            className={`relative cursor-pointer pb-3 px-1 transition-colors ${
-              activeIndex === i ? "text-black font-semibold" : "text-gray-500"
-            }`}
-          >
-            {m.title}
-            {activeIndex === i && (
-              <motion.div
-                layoutId="about-underline"
-                className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-black shadow-[0_0_8px_rgba(0,0,0,0.6)]"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-          </li>
-        ))}
+      {/* Tabs (active tab underlined; cards control active via scroll) */}
+      <ul className="relative hidden md:flex justify-center gap-8 mb-6 whitespace-nowrap border-b border-gray-200">
+        {modules.map((m, i) => {
+          const isActive = activeIndex === i;
+          return (
+            <li
+              key={i}
+              onClick={() => scrollToIndex(i)}
+              aria-current={isActive ? "true" : undefined}
+              className={`cursor-pointer pb-3 px-1 transition-colors ${
+                isActive ? "text-black font-semibold" : "text-gray-700 hover:text-black"
+              }`}
+            >
+              <span
+                className={`inline-block pb-1 ${
+                  isActive ? "border-b-2 border-black" : "border-b-2 border-transparent"
+                }`}
+              >
+                {m.title}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* Cards */}
+      {/* Cards (no hover/motion effects; horizontal slide with snap) */}
       <div
         ref={containerRef}
-        className="relative z-[10] flex overflow-x-auto space-x-8 md:space-x-10 scroll-smooth snap-x snap-mandatory pb-6 no-scrollbar mx-auto overflow-y-hidden"
+        onScroll={onScroll}
+        aria-label="About modules carousel"
+        className="relative flex overflow-x-auto space-x-8 md:space-x-10 scroll-smooth snap-x snap-mandatory pb-6 no-scrollbar mx-auto overflow-y-hidden focus:outline-none"
       >
         {modules.map((m, i) => (
-          <motion.article
+          <article
             key={i}
             data-index={i}
-            className="about-card snap-start shrink-0 w-[88vw] md:w-[58vw]
-              relative z-[20] rounded-2xl p-6 md:p-8
-              bg-white/70 backdrop-blur-xl
-              border border-black/10
-              shadow-[0_12px_32px_-16px_rgba(0,0,0,0.35)]
-              transition-all duration-300
-              hover:rotate-[1.5deg] hover:scale-105 hover:shadow-[0_22px_50px_-18px_rgba(0,0,0,0.45)]
-              group"
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.06 }}
+            ref={(el: HTMLDivElement | null) => {
+              cardRefs.current[i] = el;
+            }}
+            className="about-card snap-center shrink-0 w-[88vw] md:w-[58vw] rounded-2xl p-6 md:p-8 bg-white border border-black/10 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)]"
           >
-            <div className="relative z-[1] flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-3">
               {m.icon}
-              <h3 className="text-xl font-semibold">{m.title}</h3>
+              <h3
+                className={`text-xl font-semibold ${
+                  activeIndex === i ? "text-black" : "text-gray-900"
+                }`}
+              >
+                {m.title}
+              </h3>
             </div>
             <p className="text-gray-700 text-sm md:text-[15px] leading-relaxed">
               {m.description}
@@ -187,21 +183,22 @@ export default function AboutSection() {
             <div className="mt-6">
               <Link
                 href="/cortex"
-                className="group/btn inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black text-white px-4 py-2 text-sm transition
-                shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]
-                hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.5)] active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black text-white px-4 py-2 text-sm transition active:scale-95"
               >
                 Learn more
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
             </div>
-          </motion.article>
+          </article>
         ))}
       </div>
     </section>

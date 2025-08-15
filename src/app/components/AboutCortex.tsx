@@ -1,85 +1,85 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
-
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
-
   return isMobile
 }
 
-// Accept possibly-null refs so TS chills 🙂
 function useInView(ref: React.RefObject<HTMLElement | null>, rootMargin = '0px') {
   const [isIntersecting, setIntersecting] = useState(false)
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setIntersecting(entry.isIntersecting),
-      { rootMargin }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
+    const obs = new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting), { rootMargin })
+    obs.observe(el)
+    return () => obs.disconnect()
   }, [ref, rootMargin])
-
   return isIntersecting
 }
 
+type Mod = { img: string; label: string; hash: string }
+
+const modules: Mod[] = [
+  { img: 'module1.png', label: 'Module 1', hash: 'module1' },
+  { img: 'module2.png', label: 'Module 2', hash: 'module2' },
+  { img: 'module3.png', label: 'Module 3', hash: 'module3' },
+  { img: 'module4.png', label: 'Module 4', hash: 'module4' },
+  { img: 'module5.png', label: 'Module 5', hash: 'module5' },
+  { img: 'module6.png', label: 'Module 6', hash: 'module6' },
+  { img: 'module7.png', label: 'Module 7', hash: 'module7' },
+  { img: 'module8.png', label: 'Module 8', hash: 'module8' },
+  { img: 'module9.png', label: 'Module 9', hash: 'module9' },
+  { img: 'module10.png', label: 'Module 10', hash: 'module10' },
+  { img: 'module11.png', label: 'Module 11', hash: 'module11' },
+]
+
 function ScrollingModules() {
   const isMobile = useIsMobile()
-  const [hovered, setHovered] = useState<number | null>(null)
-
-  // declare before useInView
   const containerRef = useRef<HTMLDivElement | null>(null)
   const inView = useInView(containerRef, '-50px')
+  const [paused, setPaused] = useState(false)
 
-  const images = [
-    'module1.png', 'module2.png', 'module3.png', 'module4.png', 'module5.png',
-    'module6.png', 'module7.png', 'module8.png', 'module9.png', 'module10.png', 'module11.png',
-  ]
-
-  const duplicated = [...images, ...images]
+  const items = [...modules, ...modules]
 
   return (
-    <div ref={containerRef} className="overflow-hidden mt-10 relative rounded-2xl">
+    <div ref={containerRef} className="overflow-hidden mt-6 md:mt-10 relative rounded-2xl">
       <div
-        className={`flex gap-4 whitespace-nowrap w-max ${
-          inView ? 'animate-scroll-loop' : ''
-        } hover:[animation-play-state:paused]`}
+        className={`flex gap-3 md:gap-4 whitespace-nowrap w-max ${inView ? 'animate-scroll-loop' : ''}`}
+        style={{ animationPlayState: paused ? 'paused' : 'running' }}
       >
-        {duplicated.map((src, index) => {
-          const isActive = isMobile ? hovered === index : false
-          const isFirstFew = index < 4 // small preload boost
-
+        {items.map((m, i) => {
+          const preload = i < 4
           return (
             <Link
-              href="#"
-              key={`${src}-${index}`}
-              className={`flex-shrink-0 w-48 md:w-52 h-52 rounded-xl flex items-center justify-center p-4 transition-transform duration-300
-                ${isActive ? 'scale-105' : ''}
-                ${!isMobile ? 'hover:scale-105' : ''}
-              `}
-              onTouchStart={() => isMobile && setHovered(index)}
-              onTouchEnd={() => isMobile && setTimeout(() => setHovered(null), 300)}
+              key={`${m.img}-${i}`}
+              href={{ pathname: '/product/cortex', hash: m.hash }}
+              className="group flex-shrink-0 w-40 h-40 md:w-52 md:h-52 rounded-lg md:rounded-xl
+                         flex items-center justify-center p-3 md:p-4 transition-transform duration-200 hover:scale-[1.03]"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onTouchStart={() => setPaused(true)}
+              onTouchEnd={() => setTimeout(() => setPaused(false), 250)}
+              aria-label={m.label}
+              title={m.label}
             >
               <Image
-                src={`/modules/${src}`}
-                alt={`Module ${index + 1}`}
+                src={`/modules/${m.img}`}
+                alt={m.label}
                 width={208}
                 height={208}
                 className="h-full w-full object-contain"
-                priority={isFirstFew}
-                loading={isFirstFew ? 'eager' : 'lazy'}
+                priority={preload}
+                loading={preload ? 'eager' : 'lazy'}
               />
             </Link>
           )
@@ -93,79 +93,51 @@ export default function AboutCortex() {
   const isMobile = useIsMobile()
 
   return (
-    <section className="pt-16 pb-0 space-y-10">
+    <section className="pt-10 md:pt-16 pb-0 space-y-6 md:space-y-10">
       {/* Cortex Panel */}
-      <div className="bg-black text-white rounded-3xl mx-4 md:mx-16 px-6 md:px-12 py-16 overflow-visible space-y-10">
+      <div className="bg-black text-white rounded-2xl md:rounded-3xl mx-4 md:mx-16 px-4 md:px-12 py-10 md:py-16 overflow-visible space-y-6 md:space-y-10">
         {isMobile ? (
           <>
             <ScrollingModules />
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-white/90 to-white/40 text-transparent bg-clip-text leading-[1.2]">
+            <h2 className="text-2xl sm:text-3xl font-extrabold relative inline-block sheen-text">
               Introducing Cortex
             </h2>
             <p className="text-white/70 text-sm leading-relaxed">
               Cortex is Spryntr’s secure, scalable mission control—built to unify data,
-              automate workflows, detect patterns, and drive human-machine collaboration.
-              <br />
+              automate workflows, detect patterns, and drive human–machine collaboration.
+              <br className="hidden md:block" />
               Always on. Always learning. Always advancing your organization.
             </p>
+            <Link
+              href="/product/cortex"
+              className="mt-1 inline-flex items-center gap-2 border border-white px-5 py-2 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
+            >
+              Learn more
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </>
         ) : (
           <>
-            <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-white/90 to-white/40 text-transparent bg-clip-text leading-[1.2]">
+            <h2 className="text-4xl md:text-6xl font-extrabold relative inline-block sheen-text">
               Introducing Cortex
             </h2>
             <p className="text-white/70 text-base max-w-3xl leading-relaxed">
-              Cortex is Spryntr’s secure, scalable mission control—built to unify data,
-              automate workflows, detect patterns, and drive human-machine collaboration.
-              <br />
-              Always on. Always learning. Always advancing your organization.
+              Your mission control for unifying data, automating workflows, and driving seamless human–machine collaboration—secure, scalable, and built to evolve.
             </p>
             <ScrollingModules />
+            <Link
+              href="/product/cortex"
+              className="mt-2 inline-flex items-center gap-2 border border-white px-6 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
+            >
+              Learn more
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </>
         )}
-
-        {/* Learn More Button */}
-        <button className="mt-4 inline-flex items-center gap-2 border border-white px-6 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition duration-300">
-          Learn more
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-
-      {/* White Section */}
-      <div className="bg-[#F6F6F6] px-6 md:px-20 py-12 text-center">
-        <h2 className="text-3xl md:text-5xl font-bold">
-          Post-Generative AI Needs Better Data.
-        </h2>
-
-        <p className="mt-6 text-base md:text-lg max-w-4xl text-gray-700 mx-auto">
-          The future of AI isn’t about bigger models. It’s about smarter, context-specific
-          data from inside organizations. Spryntr enables embedded AI agents that
-          understand workflows, goals, and act intelligently.
-        </p>
-
-        {/* Quote Card */}
-        <div className="bg-white mt-10 px-6 py-6 rounded-xl border border-gray-300 max-w-3xl mx-auto">
-          <Image
-            src="/brain-icon.svg"
-            alt="Brain Icon"
-            width={24}
-            height={24}
-            className="mx-auto mb-2"
-            priority
-          />
-          <p className="text-base text-gray-600 italic">
-            &ldquo;Intelligence without context is just computation. Spryntr provides the context
-            that transforms AI from a tool into a strategic advantage.&rdquo;
-          </p>
-        </div>
       </div>
     </section>
   )

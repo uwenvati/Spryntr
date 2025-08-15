@@ -19,13 +19,8 @@ export default function Hero() {
           priority
         />
 
-        <h1 className="mt-0 text-5xl md:text-6xl font-extrabold leading-[1.1] z-10 relative">
-          <span className="sheen-wrap">
-            <span className="sheen-text">Make decisions powered by smarter data</span>
-            <span aria-hidden="true" className="sheen-overlay">
-              Make decisions powered by smarter data
-            </span>
-          </span>
+        <h1 className="mt-0 text-5xl md:text-6xl font-extrabold leading-[1.1] z-10 relative text-black">
+          Make decisions powered by smarter data
         </h1>
 
         <p className="text-gray-600 text-base md:text-lg leading-[1.6] max-w-xl z-10 relative">
