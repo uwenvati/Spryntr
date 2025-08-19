@@ -9,6 +9,8 @@ import type { Variants } from 'framer-motion'
 
 type MenuKey = 'About' | 'Products' | 'Resources' | null
 
+const DISCORD_INVITE = 'https://discord.gg/mpEbkS4m'
+
 const DROPDOWNS: Record<Exclude<MenuKey, null>, { name: string; href: string; icon?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }[]> = {
   About: [
     { name: 'Company', href: '/about/company', icon: 'folder' },
@@ -20,7 +22,8 @@ const DROPDOWNS: Record<Exclude<MenuKey, null>, { name: string; href: string; ic
   Resources: [
     { name: 'Docs', href: '/resources/docs', icon: 'book' },
     { name: 'GitHub', href: 'https://github.com', icon: 'git' },
-    { name: 'Discord', href: 'https://discord.com', icon: 'file' },
+    // Use the same Discord invite as Get started
+    { name: 'Discord', href: DISCORD_INVITE, icon: 'file' },
   ],
 }
 
@@ -51,6 +54,21 @@ export default function Navbar() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [openMobileKey, setOpenMobileKey] = useState<MenuKey>(null)
+
+  // ✅ detect touch to change dropdown behavior
+  const [isTouch, setIsTouch] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(pointer: coarse)')
+    setIsTouch(!!mq?.matches)
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
+    // add/remove listener for widest browser support
+    // @ts-ignore
+    mq?.addEventListener ? mq.addEventListener('change', handler) : mq?.addListener?.(handler)
+    return () => {
+      // @ts-ignore
+      mq?.removeEventListener ? mq.removeEventListener('change', handler) : mq?.removeListener?.(handler)
+    }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -89,13 +107,16 @@ export default function Navbar() {
             <li
               key={key}
               className="relative"
-              onMouseEnter={() => { cancelClose(); setOpenKey(key) }}
-              onMouseLeave={scheduleClose}
+              onMouseEnter={!isTouch ? () => { cancelClose(); setOpenKey(key) } : undefined}
+              onMouseLeave={!isTouch ? scheduleClose : undefined}
             >
               <button
                 className="flex items-center gap-1 text-black"
-                onFocus={() => setOpenKey(key)}
-                onBlur={scheduleClose}
+                onFocus={!isTouch ? () => setOpenKey(key) : undefined}
+                onBlur={!isTouch ? scheduleClose : undefined}
+                onClick={isTouch ? () => setOpenKey(openKey === key ? null : key) : undefined}
+                aria-expanded={openKey === key}
+                aria-haspopup="menu"
               >
                 {key} <ChevronDown size={14} className="text-black" />
               </button>
@@ -109,10 +130,8 @@ export default function Navbar() {
                     animate="animate"
                     exit="exit"
                     className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg py-2 px-3 z-50 pointer-events-auto"
-                    onMouseEnter={cancelClose}
-                    onMouseLeave={scheduleClose}
-                    onFocus={cancelClose}
-                    onBlur={scheduleClose}
+                    onMouseEnter={!isTouch ? cancelClose : undefined}
+                    onMouseLeave={!isTouch ? scheduleClose : undefined}
                   >
                     {DROPDOWNS[key].map(({ name, href, icon }) => (
                       <Link
@@ -141,15 +160,16 @@ export default function Navbar() {
 
         {/* Right: Auth */}
         <div className="flex items-center gap-4 text-sm">
-          <Link href="#" className="text-black">
-            Sign in
-          </Link>
-          <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
+          {/* Removed "Sign in" per request */}
+          <Link
+            href={DISCORD_INVITE}
+            className="bg-black text-white px-4 py-2 rounded-full flex items-center"
+          >
             Get started
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -172,7 +192,6 @@ export default function Navbar() {
       {/* MOBILE FULLSCREEN MENU */}
       {menuOpen && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-2xl font-medium">
-          {/* Relative wrapper for background and content */}
           <div className="relative w-full h-full flex flex-col items-center justify-center">
             {/* Close Button */}
             <button
@@ -255,15 +274,17 @@ export default function Navbar() {
 
               {/* Auth buttons */}
               <div className="flex justify-center items-center gap-4 mt-8 text-sm">
-                <Link href="#" className="text-black flex items-center h-full" onClick={() => setMenuOpen(false)}>
-                  Sign in
-                </Link>
-                <button className="bg-black text-white px-4 py-2 rounded-full flex items-center">
+                {/* Removed "Sign in" per request */}
+                <Link
+                  href={DISCORD_INVITE}
+                  className="bg-black text-white px-4 py-2 rounded-full flex items-center"
+                  onClick={() => setMenuOpen(false)}
+                >
                   Get started
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                </button>
+                </Link>
               </div>
             </div>
           </div>

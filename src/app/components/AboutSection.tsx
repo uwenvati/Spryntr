@@ -115,11 +115,14 @@ export default function AboutSection() {
     <section className="relative z-0 bg-[#FCFCFD] py-16 px-4 md:px-8 overflow-visible">
       {/* Heading + paragraph (right-aligned, same font as Hero, no animation) */}
       <div className="max-w-4xl ml-auto text-right mb-10">
-        <h2 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight text-black">
-          Smarter Solutions for <br />
-           Faster & Clearer <br />
-           Decisions
-        </h2>
+       <h2 className="font-semibold leading-tight tracking-tight text-black text-4xl md:text-6xl lg:text-7xl">
+  Smarter Solutions for <br />
+  Faster & Clearer <br />
+  Decisions
+</h2>
+
+
+
         <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed">
           From scattered systems to slow decisions—solve it all with smarter, faster,
           data-powered solutions.
@@ -181,22 +184,24 @@ export default function AboutSection() {
               {m.description}
             </p>
             <div className="mt-6">
-              <Link
-                href="/cortex"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black text-white px-4 py-2 text-sm transition active:scale-95"
-              >
-                Learn more
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+            <Link
+  href="/#top"
+  className="inline-flex items-center gap-2 rounded-xl border border-black/15 bg-black text-white px-4 py-2 text-sm transition active:scale-95"
+>
+  Learn more
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+  </svg>
+</Link>
+
+
             </div>
           </article>
         ))}

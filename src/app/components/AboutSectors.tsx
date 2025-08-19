@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import Image from "next/image";
@@ -69,7 +69,7 @@ export default function AboutSectors() {
     <section className="bg-[#FCFCFD] py-14 px-0 md:px-8 overflow-x-hidden">
       {/* Main section heading */}
       <div className="max-w-5xl mx-auto text-center mb-4 md:mb-8 px-4">
-        <h2 className="text-3xl md:text-6xl font-extrabold leading-tight tracking-tight text-black">
+        <h2 className="text-3xl md:text-6xl lg:text-7xl font-semibold leading-tight tracking-tight text-black">
           Built for Complexity Across Sectors
         </h2>
         <p className="hidden md:block mt-5 text-gray-700 max-w-3xl mx-auto md:text-lg leading-relaxed">
@@ -79,10 +79,10 @@ export default function AboutSectors() {
         </p>
       </div>
 
-      {/* Single active sector title with shimmer */}
+      {/* Single active sector title */}
       <div className="text-center mb-4 md:mb-6 px-4">
         <div className="inline-block relative">
-          <span className="text-base md:text-2xl font-extrabold text-black">
+          <span className="text-base md:text-2xl font-semibold text-black">
             {sectors[active].title}
           </span>
           <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -115,15 +115,21 @@ export default function AboutSectors() {
         <div
           ref={containerRef}
           onScroll={onScroll}
-          className="relative mx-0 md:mx-12 flex overflow-x-auto space-x-3 md:space-x-6 scroll-smooth snap-x snap-mandatory no-scrollbar scroll-px-4 md:scroll-px-12
-                     overscroll-x-contain touch-pan-y"
           aria-label="Sectors carousel"
+          className="
+            relative mx-0 md:mx-12 flex overflow-x-auto space-x-3 md:space-x-6 scroll-smooth
+            snap-x snap-mandatory no-scrollbar scroll-px-4 md:scroll-px-12
+            overscroll-x-contain touch-pan-x
+          "
         >
           {sectors.map((s, i) => (
             <div
               key={s.title}
               ref={(el: HTMLDivElement | null) => { cardRefs.current[i] = el }}
-              className="snap-center shrink-0 w-[86vw] sm:w-[84vw] md:w-[960px] rounded-xl overflow-hidden border border-black/10 bg-black/5"
+              className="
+                snap-center shrink-0 w-[86vw] sm:w-[84vw] md:w-[960px]
+                rounded-xl overflow-hidden border border-black/10 bg-black/5
+              "
             >
               <div className="relative aspect-[4/3] md:aspect-[16/9]">
                 <Image
@@ -132,7 +138,8 @@ export default function AboutSectors() {
                   fill
                   priority={i === 0}
                   sizes="(max-width: 640px) 86vw, (max-width: 768px) 84vw, 960px"
-                  className="object-cover"
+                  className="object-cover select-none"
+                  draggable={false}
                 />
                 {/* bottom gradient */}
                 <div className="absolute inset-x-0 bottom-0 h-24 md:h-40 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />

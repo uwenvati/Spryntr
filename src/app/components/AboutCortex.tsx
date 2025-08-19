@@ -44,7 +44,6 @@ const modules: Mod[] = [
 ]
 
 function ScrollingModules() {
-  //const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const inView = useInView(containerRef, '-50px')
   const [paused, setPaused] = useState(false)
@@ -95,14 +94,14 @@ export default function AboutCortex() {
   return (
     <section className="pt-10 md:pt-16 pb-0 space-y-6 md:space-y-10">
       {/* Cortex Panel */}
-      <div className="bg-black text-white rounded-2xl md:rounded-3xl mx-4 md:mx-16 px-4 md:px-12 py-10 md:py-16 overflow-visible space-y-6 md:space-y-10">
+      <div className="bg-black text-white rounded-2xl md:rounded-3xl mx-4 md:mx-16 px-4 md:px-12 py-10 md:py-16 overflow-visible space-y-6 md:space-y-10 text-center">
         {isMobile ? (
           <>
             <ScrollingModules />
-            <h2 className="text-2xl sm:text-3xl font-extrabold relative inline-block sheen-text">
+            <h2 className="text-2xl sm:text-3xl font-semibold relative inline-block sheen-text">
               Introducing Cortex
             </h2>
-            <p className="text-white/70 text-sm leading-relaxed">
+            <p className="text-white/70 text-sm leading-relaxed mt-2">
               Cortex is Spryntr’s secure, scalable mission control—built to unify data,
               automate workflows, detect patterns, and drive human–machine collaboration.
               <br className="hidden md:block" />
@@ -110,7 +109,7 @@ export default function AboutCortex() {
             </p>
             <Link
               href="/product/cortex"
-              className="mt-1 inline-flex items-center gap-2 border border-white px-5 py-2 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
+              className="mt-3 inline-flex items-center gap-2 border border-white px-5 py-2 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
             >
               Learn more
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,16 +119,16 @@ export default function AboutCortex() {
           </>
         ) : (
           <>
-            <h2 className="text-4xl md:text-6xl font-extrabold relative inline-block sheen-text">
+            <h2 className="text-4xl md:text-6xl font-semibold relative inline-block sheen-text">
               Introducing Cortex
             </h2>
-            <p className="text-white/70 text-base max-w-3xl leading-relaxed">
+            <p className="text-white/70 text-base md:text-lg max-w-3xl leading-relaxed mx-auto mt-3">
               Your mission control for unifying data, automating workflows, and driving seamless human–machine collaboration—secure, scalable, and built to evolve.
             </p>
             <ScrollingModules />
             <Link
               href="/product/cortex"
-              className="mt-2 inline-flex items-center gap-2 border border-white px-6 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
+              className="mt-4 inline-flex items-center gap-2 border border-white px-6 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white hover:text-black transition"
             >
               Learn more
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
