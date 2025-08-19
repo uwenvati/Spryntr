@@ -57,18 +57,29 @@ export default function Navbar() {
 
   // ✅ detect touch to change dropdown behavior
   const [isTouch, setIsTouch] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia?.('(pointer: coarse)')
-    setIsTouch(!!mq?.matches)
-    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
-    // add/remove listener for widest browser support
-    // @ts-ignore
-    mq?.addEventListener ? mq.addEventListener('change', handler) : mq?.addListener?.(handler)
-    return () => {
-      // @ts-ignore
-      mq?.removeEventListener ? mq.removeEventListener('change', handler) : mq?.removeListener?.(handler)
-    }
-  }, [])
+  // ✅ Touch detection without unused expressions or ts-ignore
+useEffect(() => {
+  const mq = window.matchMedia?.('(pointer: coarse)');
+  setIsTouch(!!mq?.matches);
+
+  if (!mq) return;
+
+  const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+
+  if ('addEventListener' in mq) {
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }
+
+  // Older Safari fallback
+  // @ts-expect-error: addListener exists on older MediaQueryList
+  mq.addListener(handler);
+  return () => {
+    // @ts-expect-error: removeListener exists on older MediaQueryList
+    mq.removeListener(handler);
+  };
+}, []);
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)

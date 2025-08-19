@@ -1,35 +1,22 @@
-
+import './globals.css'
+import Navbar from './components/Navbar'
+import { Inter, Outfit } from 'next/font/google'
 
 export const metadata = {
   title: 'Spryntr',
   description: 'Built by Shammah ',
 }
 
-
-// src/app/layout.tsx
-import './globals.css'
-import Navbar from './components/Navbar'
-import { Inter } from 'next/font/google'
-import { Outfit } from "next/font/google";
-
-const outfit = Outfit({ subsets: ["latin"], weight: ["400", "600", "700", "900"] });
-
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const outfit = Outfit({ subsets: ['latin'], weight: ['400','600','700','900'], variable: '--font-outfit' })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.className}>
-      <body className="bg-[#FCFCFD] text-black">
-
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <body className="bg-[#FCFCFD] text-black font-[var(--font-inter)]">
         <Navbar />
         {children}
       </body>
     </html>
   )
 }
-
-
-
-
-
-

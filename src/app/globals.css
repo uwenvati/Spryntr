@@ -5,6 +5,10 @@ html, body {
    scroll-behavior: smooth;
 }
 
+h1, h2, h3, .font-heading {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui;
+}
+
 
 
 
