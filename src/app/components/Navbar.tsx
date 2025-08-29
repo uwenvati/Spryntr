@@ -6,24 +6,26 @@ import Image from 'next/image'
 import { ChevronDown, Folder, Users, BookOpen, GitBranch, FileText } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
+import { useWaitlistModal } from '@/context/WaitlistModalContext' // ⬅️ NEW
 
 type MenuKey = 'About' | 'Products' | 'Resources' | null
 
 const DISCORD_INVITE = 'https://discord.gg/mpEbkS4m'
 
-const DROPDOWNS: Record<Exclude<MenuKey, null>, { name: string; href: string; icon?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }[]> = {
+const DROPDOWNS: Record<
+  Exclude<MenuKey, null>,
+  { name: string; href: string; icon?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex' }[]
+> = {
   About: [
     { name: 'Company', href: '/about/company', icon: 'folder' },
     { name: 'Team', href: '/about/team', icon: 'users' },
   ],
-  Products: [
-    { name: 'Cortex', href: '/product/cortex', icon: 'cortex' },
-  ],
+  Products: [{ name: 'Cortex', href: '/product/cortex', icon: 'cortex' }],
   Resources: [
     { name: 'Docs', href: '/resources/docs', icon: 'book' },
+    { name: 'Blog', href: '/resources/blog', icon: 'file' },
     { name: 'GitHub', href: 'https://github.com', icon: 'git' },
-    // Use the same Discord invite as Get started
-    { name: 'Discord', href: DISCORD_INVITE, icon: 'file' },
+    { name: 'Discord', href: DISCORD_INVITE, icon: 'file' }, // keeps direct Discord in Resources
   ],
 }
 
@@ -32,11 +34,16 @@ function Icon({ name }: { name?: 'folder' | 'users' | 'book' | 'git' | 'file' | 
   if (name === 'cortex') return <Image src="/cortex-icon.svg" alt="Cortex" width={16} height={16} />
   const common = { size: 16, className: 'text-black' } as const
   switch (name) {
-    case 'folder': return <Folder {...common} />
-    case 'users': return <Users {...common} />
-    case 'book': return <BookOpen {...common} />
-    case 'git': return <GitBranch {...common} />
-    case 'file': return <FileText {...common} />
+    case 'folder':
+      return <Folder {...common} />
+    case 'users':
+      return <Users {...common} />
+    case 'book':
+      return <BookOpen {...common} />
+    case 'git':
+      return <GitBranch {...common} />
+    case 'file':
+      return <FileText {...common} />
   }
 }
 
@@ -45,7 +52,6 @@ const ddVariants: Variants = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.16, ease: 'easeOut' } },
   exit: { opacity: 0, y: 8, transition: { duration: 0.12, ease: 'easeIn' } },
 }
-
 const accVariants: Variants = ddVariants
 
 export default function Navbar() {
@@ -55,31 +61,27 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openMobileKey, setOpenMobileKey] = useState<MenuKey>(null)
 
-  // ✅ detect touch to change dropdown behavior
+  // ⬇️ NEW: modal hook
+  const { open: openWaitlist } = useWaitlistModal()
+
+  // detect touch for dropdown behavior
   const [isTouch, setIsTouch] = useState(false)
-  // ✅ Touch detection without unused expressions or ts-ignore
-useEffect(() => {
-  const mq = window.matchMedia?.('(pointer: coarse)');
-  setIsTouch(!!mq?.matches);
-
-  if (!mq) return;
-
-  const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
-
-  if ('addEventListener' in mq) {
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }
-
-  // Older Safari fallback
-  // @ts-expect-error: addListener exists on older MediaQueryList
-  mq.addListener(handler);
-  return () => {
-    // @ts-expect-error: removeListener exists on older MediaQueryList
-    mq.removeListener(handler);
-  };
-}, []);
-
+  useEffect(() => {
+    const mq = window.matchMedia?.('(pointer: coarse)')
+    setIsTouch(!!mq?.matches)
+    if (!mq) return
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
+    if ('addEventListener' in mq) {
+      mq.addEventListener('change', handler)
+      return () => mq.removeEventListener('change', handler)
+    }
+    // @ts-expect-error older Safari
+    mq.addListener(handler)
+    return () => {
+      // @ts-expect-error older Safari
+      mq.removeListener(handler)
+    }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -169,18 +171,18 @@ useEffect(() => {
           </li>
         </ul>
 
-        {/* Right: Auth */}
+        {/* Right: CTA */}
         <div className="flex items-center gap-4 text-sm">
-          {/* Removed "Sign in" per request */}
-          <Link
-            href={DISCORD_INVITE}
+          {/* ⬇️ Changed from <Link href={DISCORD_INVITE}> to button that opens modal */}
+          <button
+            onClick={openWaitlist}
             className="bg-black text-white px-4 py-2 rounded-full flex items-center"
           >
             Get started
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
-          </Link>
+          </button>
         </div>
       </nav>
 
@@ -283,19 +285,18 @@ useEffect(() => {
                 </li>
               </ul>
 
-              {/* Auth buttons */}
+              {/* CTA */}
               <div className="flex justify-center items-center gap-4 mt-8 text-sm">
-                {/* Removed "Sign in" per request */}
-                <Link
-                  href={DISCORD_INVITE}
+                {/* ⬇️ Changed from Discord link to modal open */}
+                <button
+                  onClick={() => { openWaitlist(); setMenuOpen(false) }}
                   className="bg-black text-white px-4 py-2 rounded-full flex items-center"
-                  onClick={() => setMenuOpen(false)}
                 >
                   Get started
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                </Link>
+                </button>
               </div>
             </div>
           </div>

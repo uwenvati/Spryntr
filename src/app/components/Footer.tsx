@@ -1,8 +1,12 @@
+'use client'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FaLinkedin, FaGithub, FaDiscord } from 'react-icons/fa'
+import { useWaitlistModal } from '@/context/WaitlistModalContext' // ⬅️ NEW
 
 export default function Footer() {
+  const { open: openWaitlist } = useWaitlistModal() // ⬅️ modal trigger
+
   return (
     <footer className="bg-white pt-24">
 
@@ -12,20 +16,21 @@ export default function Footer() {
           Start building <br /> your digital foundation.
         </h2>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <Link
-            href="/product/cortex"
+          {/* Get Started → Waitlist */}
+          <button
+            onClick={openWaitlist}
             className="bg-black text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-900 transition"
           >
             Get Started <span className="ml-2">→</span>
-          </Link>
-          <Link
-            href="https://discord.gg/mpEbkS4m"
-            target="_blank"
-            rel="noopener noreferrer"
+          </button>
+
+          {/* Request Demo → Waitlist */}
+          <button
+            onClick={openWaitlist}
             className="bg-[#FCFCFD] border border-[#FAFAFA] text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transition"
           >
             Request Demo <span className="ml-2">→</span>
-          </Link>
+          </button>
         </div>
       </div>
 
