@@ -77,9 +77,12 @@ export default function WaitlistModal() {
       // success → show Discord card and close modal
       setShowDiscord(true);
       close();
-    } catch (err: any) {
-      alert(err?.message || 'Something went wrong');
-    } finally {
+    } catch (err: unknown) {
+  const msg =
+    err instanceof Error ? err.message : typeof err === 'string' ? err : 'Something went wrong';
+  alert(msg);
+} finally {
+
       setSubmitting(false);
     }
   };

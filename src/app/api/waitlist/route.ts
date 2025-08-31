@@ -77,7 +77,9 @@ export async function POST(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? 'Unknown error' }, { status: 500 });
+  } catch (e: unknown) {
+    const msg =
+      e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
