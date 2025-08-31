@@ -18,9 +18,14 @@ export default function WaitlistModal() {
   const [form, setForm] = useState<FormState>(initial);
   const [submitting, setSubmitting] = useState(false);
   const [showDiscord, setShowDiscord] = useState(false);
+  const [openedAt, setOpenedAt] = useState<number | null>(null); // ⬅️ when modal opened
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // reset form when closing
   useEffect(() => { if (!isOpen) setForm(initial); }, [isOpen]);
+
+  // record when the modal was opened (for simple anti-bot timing on server)
+  useEffect(() => { if (isOpen) setOpenedAt(Date.now()); }, [isOpen]);
 
   // Close on ESC
   useEffect(() => {
@@ -33,13 +38,47 @@ export default function WaitlistModal() {
     e.preventDefault();
     setSubmitting(true);
 
-    // FRONT-END ONLY for now: simulate success + save locally for testing
     try {
-      const payload = { ...form, ts: new Date().toISOString() };
-      localStorage.setItem('spryntr_waitlist_last', JSON.stringify(payload));
-      // TODO: replace with POST /api/waitlist later
+      // Collect UTM params from current URL if present
+      const p = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const utm = {
+        utm_source: p?.get('utm_source') || '',
+        utm_medium: p?.get('utm_medium') || '',
+        utm_campaign: p?.get('utm_campaign') || '',
+        utm_term: p?.get('utm_term') || '',
+        utm_content: p?.get('utm_content') || '',
+      };
+
+      // Map your fields to the API shape
+      const payload = {
+        org_name: form.org,
+        contact_name: `${form.first_name} ${form.last_name}`.trim(),
+        email: form.email,
+        role: '',
+        website: '',
+        industry: form.sector,
+        size: '',
+        use_case: '',
+        source: 'waitlist_modal',
+        ...utm,
+        company: '',                 // honeypot (must remain empty for humans)
+        t: openedAt ?? Date.now(),   // when the user opened the modal
+      };
+
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to join waitlist');
+
+      // success → show Discord card and close modal
       setShowDiscord(true);
       close();
+    } catch (err: any) {
+      alert(err?.message || 'Something went wrong');
     } finally {
       setSubmitting(false);
     }
@@ -76,6 +115,9 @@ export default function WaitlistModal() {
               </div>
 
               <form onSubmit={onSubmit} className="mt-6 space-y-5">
+                {/* Honeypot for bots (hidden from users) */}
+                <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
                     <label className="text-sm">First name: <span className="text-red-500">*</span></label>
