@@ -4,6 +4,10 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 // Use Node runtime for server secrets (safer for service role)
 export const runtime = 'nodejs';
 
+export async function GET() {
+  return NextResponse.json({ ok: true, message: 'Waitlist API is live' }, { status: 200 });
+}
+
 type Body = {
   org_name: string;
   contact_name?: string;
@@ -31,7 +35,7 @@ export async function POST(req: Request) {
   try {
     const ua = req.headers.get('user-agent') ?? '';
     const ip =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 
       req.headers.get('x-real-ip') ?? '';
 
     const body = (await req.json()) as Body;
