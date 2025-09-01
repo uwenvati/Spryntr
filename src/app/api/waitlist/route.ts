@@ -1,11 +1,25 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Use Node runtime for server secrets (safer for service role)
 export const runtime = 'nodejs';
 
-export async function GET() {
-  return NextResponse.json({ ok: true, message: 'Waitlist API is live' }, { status: 200 });
+export async function GET(req: Request) {
+  // Optional: quick sanity check without leaking values
+  const { searchParams } = new URL(req.url);
+  const debug = searchParams.get('debug') === '1';
+
+  return NextResponse.json(
+    debug
+      ? {
+          ok: true,
+          message: 'Waitlist API is live',
+          // Booleans only—no secrets!
+          has_SUPABASE_URL: Boolean(process.env.SUPABASE_URL),
+          has_SUPABASE_SERVICE_ROLE_KEY: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        }
+      : { ok: true, message: 'Waitlist API is live' },
+    { status: 200 }
+  );
 }
 
 type Body = {
@@ -33,9 +47,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
 export async function POST(req: Request) {
   try {
+    // ⬇️ Import here so GET doesn't crash if envs are missing
+    const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+
     const ua = req.headers.get('user-agent') ?? '';
     const ip =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       req.headers.get('x-real-ip') ?? '';
 
     const body = (await req.json()) as Body;
@@ -82,8 +99,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
   } catch (e: unknown) {
-    const msg =
-      e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
+    const msg = e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
