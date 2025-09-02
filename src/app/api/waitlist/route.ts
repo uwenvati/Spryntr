@@ -53,20 +53,28 @@ export async function POST(req: Request) {
       country: body.country ?? null,
     };
 
-    const { data, error } = await supabase
-      .from('waitlist_signup') // ✅ no schema prefix
-      .insert([payload])
-      .select();
+    
+const { data, error } = await supabase
+  .from('waitlist_signup')
+  .insert([payload])
+  .select();
 
-    if (error) {
-      // error is typed as PostgrestError | null
-      const pgErr = error as PostgrestError;
-      console.error('Supabase insert error:', pgErr);
-      const status = pgErr.code === '23505' ? 409 : 400; // 23505: unique_violation
-      return NextResponse.json({ ok: false, error: pgErr.message }, { status });
-    }
+if (error) {
+  // 23505 = unique_violation (duplicate email)
+  if ((error as PostgrestError).code === '23505') {
+    // Idempotent behavior: user is already on the waitlist → return 200 OK
+    return NextResponse.json(
+      { ok: true, alreadyOnWaitlist: true },
+      { status: 200 }
+    );
+  }
 
-    return NextResponse.json({ ok: true, data }, { status: 201 });
+  console.error('Supabase insert error:', error);
+  return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+}
+
+return NextResponse.json({ ok: true, data }, { status: 201 });
+
   } catch (err: unknown) {
     console.error('API crash:', err);
     return NextResponse.json(
