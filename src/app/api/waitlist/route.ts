@@ -1,86 +1,55 @@
-// src/app/api/waitlist/route.ts
+// app/api/waitlist/route.ts
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin'; // ⬅️ make sure this line exists
+import { createClient } from '@supabase/supabase-js';
 
+// ✅ Use the *server-only* env vars you already set in .env.local
+const supabase = createClient(
+  process.env.SUPABASE_URL!,               // not NEXT_PUBLIC_*
+  process.env.SUPABASE_SERVICE_ROLE_KEY!   // service role (server only)
+);
+
+// Optional: force Node runtime (safer with server envs)
 export const runtime = 'nodejs';
-
-export async function GET() {
-  return NextResponse.json({ ok: true, message: 'Waitlist API is live' }, { status: 200 });
-}
-
-type Body = {
-  org_name: string;
-  contact_name?: string;
-  email: string;
-  role?: string;
-  website?: string;
-  industry?: string;
-  size?: string;
-  use_case?: string;
-  source?: string;
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  utm_term?: string;
-  utm_content?: string;
-  company?: string;
-  t?: number;
-};
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
 export async function POST(req: Request) {
   try {
-    const ua = req.headers.get('user-agent') ?? '';
-    const ip =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      req.headers.get('x-real-ip') ?? '';
+    const body = await req.json();
 
-    const body = (await req.json()) as Body;
-
-    if (!body?.org_name || !body?.email) {
-      return NextResponse.json({ error: 'org_name and email are required' }, { status: 400 });
-    }
-    if (!EMAIL_RE.test(body.email)) {
-      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    const required = ['first_name', 'last_name', 'email'];
+    for (const k of required) {
+      if (!body?.[k] || typeof body[k] !== 'string') {
+        return NextResponse.json({ ok: false, error: `Missing or invalid field: ${k}` }, { status: 400 });
+      }
     }
 
-    if (typeof body.company === 'string' && body.company.trim() !== '') {
-      return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
-    }
-    const now = Date.now();
-    if (typeof body.t === 'number' && now - body.t < 2000) {
-      return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
-    }
-
-    // Create client at runtime (envs now available)
-    const supabaseAdmin = getSupabaseAdmin();
-
-    const { error } = await supabaseAdmin.from('waitlist_signups').insert({
-      org_name: body.org_name,
-      contact_name: body.contact_name ?? null,
+    const payload = {
+      first_name: body.first_name,
+      last_name: body.last_name,
       email: body.email,
-      role: body.role ?? null,
-      website: body.website ?? null,
-      industry: body.industry ?? null,
-      size: body.size ?? null,
-      use_case: body.use_case ?? null,
-      source: body.source ?? null,
-      utm_source: body.utm_source ?? null,
-      utm_medium: body.utm_medium ?? null,
-      utm_campaign: body.utm_campaign ?? null,
-      utm_term: body.utm_term ?? null,
-      utm_content: body.utm_content ?? null,
-      ip,
-      user_agent: ua,
-      discord_redirected: true,
-    });
+      org: body.org ?? null,
+      sector: body.sector ?? null,
+      country: body.country ?? null,
+    };
 
-    if (error) throw error;
+    const { data, error } = await supabase
+      .from('waitlist_signup')
+      .insert([payload])
+      .select();
 
-    return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    if (error) {
+      console.error('Supabase insert error:', error);
+      const status = (error as any).code === '23505' ? 409 : 400;
+      return NextResponse.json({ ok: false, error: error.message }, { status });
+    }
+
+    return NextResponse.json({ ok: true, data }, { status: 201 });
+  } catch (err: any) {
+    console.error('API crash:', err);
+    return NextResponse.json({ ok: false, error: err?.message ?? 'Server error' }, { status: 500 });
   }
+}
+
+// (Optional) tiny GET for a quick health check in your browser
+export async function GET() {
+  return NextResponse.json({ ok: true, route: '/api/waitlist' });
 }
