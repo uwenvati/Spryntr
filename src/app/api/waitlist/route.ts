@@ -48,7 +48,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 export async function POST(req: Request) {
   try {
     // ⬇️ Import here so GET doesn't crash if envs are missing
-    const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+   import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+const supabaseAdmin = getSupabaseAdmin();
+
 
     const ua = req.headers.get('user-agent') ?? '';
     const ip =
