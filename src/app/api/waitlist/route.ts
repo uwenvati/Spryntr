@@ -1,7 +1,7 @@
+// src/app/api/waitlist/route.ts
 import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'; // ⬅️ make sure this line exists
 
-
-// Use Node runtime for server secrets (safer for service role)
 export const runtime = 'nodejs';
 
 export async function GET() {
@@ -23,8 +23,8 @@ type Body = {
   utm_campaign?: string;
   utm_term?: string;
   utm_content?: string;
-  company?: string; // honeypot
-  t?: number;       // client timestamp
+  company?: string;
+  t?: number;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
@@ -38,7 +38,6 @@ export async function POST(req: Request) {
 
     const body = (await req.json()) as Body;
 
-    // Validate
     if (!body?.org_name || !body?.email) {
       return NextResponse.json({ error: 'org_name and email are required' }, { status: 400 });
     }
@@ -46,7 +45,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Anti-spam
     if (typeof body.company === 'string' && body.company.trim() !== '') {
       return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
     }
@@ -55,7 +53,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
     }
 
-    // ⬇️ Create the client at runtime (after envs are loaded)
+    // Create client at runtime (envs now available)
     const supabaseAdmin = getSupabaseAdmin();
 
     const { error } = await supabaseAdmin.from('waitlist_signups').insert({
