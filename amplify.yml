@@ -3,11 +3,12 @@ frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 18
-        - nvm use 18
         - npm ci
     build:
       commands:
+        - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production
+        - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production
+        - echo "DISCORD_INVITE_URL=$DISCORD_INVITE_URL" >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
