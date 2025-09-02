@@ -1,25 +1,11 @@
 import { NextResponse } from 'next/server';
 
+
 // Use Node runtime for server secrets (safer for service role)
 export const runtime = 'nodejs';
 
-export async function GET(req: Request) {
-  // Optional: quick sanity check without leaking values
-  const { searchParams } = new URL(req.url);
-  const debug = searchParams.get('debug') === '1';
-
-  return NextResponse.json(
-    debug
-      ? {
-          ok: true,
-          message: 'Waitlist API is live',
-          // Booleans only—no secrets!
-          has_SUPABASE_URL: Boolean(process.env.SUPABASE_URL),
-          has_SUPABASE_SERVICE_ROLE_KEY: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-        }
-      : { ok: true, message: 'Waitlist API is live' },
-    { status: 200 }
-  );
+export async function GET() {
+  return NextResponse.json({ ok: true, message: 'Waitlist API is live' }, { status: 200 });
 }
 
 type Body = {
@@ -37,21 +23,14 @@ type Body = {
   utm_campaign?: string;
   utm_term?: string;
   utm_content?: string;
-
-  // anti-spam helpers
-  company?: string; // honeypot (must be empty)
-  t?: number;       // client timestamp to detect super-fast bots
+  company?: string; // honeypot
+  t?: number;       // client timestamp
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
 export async function POST(req: Request) {
   try {
-    // ⬇️ Import here so GET doesn't crash if envs are missing
-   import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-const supabaseAdmin = getSupabaseAdmin();
-
-
     const ua = req.headers.get('user-agent') ?? '';
     const ip =
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -67,15 +46,17 @@ const supabaseAdmin = getSupabaseAdmin();
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Anti-spam: honeypot must be empty
+    // Anti-spam
     if (typeof body.company === 'string' && body.company.trim() !== '') {
       return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
     }
-    // Anti-spam: basic fill-time check (>=2s)
     const now = Date.now();
     if (typeof body.t === 'number' && now - body.t < 2000) {
       return NextResponse.json({ ok: true, redirect: process.env.DISCORD_INVITE_URL });
     }
+
+    // ⬇️ Create the client at runtime (after envs are loaded)
+    const supabaseAdmin = getSupabaseAdmin();
 
     const { error } = await supabaseAdmin.from('waitlist_signups').insert({
       org_name: body.org_name,
