@@ -6,6 +6,12 @@ import WelcomeEmail from '../../../../../emails/welcome';
 
 export const runtime = 'nodejs';
 
+// Minimal type for Resend's send() result (v3-style)
+type ResendSendResult = {
+  data: { id: string } | null;
+  error: { name?: string; message: string } | null;
+};
+
 export async function POST(req: Request) {
   const now = new Date().toISOString();
   console.log('[notify] route hit at', now);
@@ -13,16 +19,16 @@ export async function POST(req: Request) {
   // ---- CONFIG / ENVS ----
   const RESEND_API_KEY = process.env.RESEND_API_KEY; // required (server-only)
   const ENV_FROM = process.env.FROM_EMAIL;           // e.g. "Spryntr <no-reply@updates.spryntr.co>"
-  const REPLY_TO = process.env.REPLY_TO || 'vem@spryntr.co';
+  const REPLY_TO: string = process.env.REPLY_TO || 'vem@spryntr.co';
   const ACCOUNT_EMAIL = process.env.ACCOUNT_EMAIL || 'vem@spryntr.co'; // used in test mode
   const DISCORD_INVITE_URL = process.env.DISCORD_INVITE_URL;
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  
 
   try {
     // ---- INPUT ----
-    const body = await req.json().catch(() => ({}));
-    const { email, first_name } = body || {};
+    // If body is empty/invalid JSON, fall back to empty object
+    const body: unknown = await req.json().catch(() => ({}));
+    const { email, first_name } = (body as { email?: string; first_name?: string });
 
     // ---- BASIC VALIDATION ----
     if (!email || typeof email !== 'string') {
@@ -47,7 +53,7 @@ export async function POST(req: Request) {
 
     // ---- INFO (for logs / debugging; no secrets) ----
     const info = {
-      hasKey: !!RESEND_API_KEY,
+      hasKey: Boolean(RESEND_API_KEY),
       isVerifiedMode,
       from: effectiveFrom,
       to: effectiveTo,
@@ -77,38 +83,38 @@ export async function POST(req: Request) {
     // ---- SEND EMAIL VIA RESEND ----
     const resend = new Resend(RESEND_API_KEY);
 
-    const send = await resend.emails.send({
-  from: effectiveFrom,
-  to: [effectiveTo],
-  subject: 'Thanks for joining!',
-  replyTo: REPLY_TO, 
-  react: React.createElement(WelcomeEmail, {
-    firstName: first_name || 'there',
-    discordInviteUrl: DISCORD_INVITE_URL,
-    siteUrl: SITE_URL,
-  }),
-});
+    const send: ResendSendResult = await resend.emails.send({
+      from: effectiveFrom,
+      to: [effectiveTo], // string or string[] are both accepted
+      subject: 'Thanks for joining!',
+      replyTo: REPLY_TO, // camelCase to match your SDK's CreateEmailOptions
+      react: React.createElement(WelcomeEmail, {
+        firstName: first_name || 'there',
+        discordInviteUrl: DISCORD_INVITE_URL,
+        siteUrl: SITE_URL,
+      }),
+    }) as ResendSendResult;
 
     // ---- HANDLE PROVIDER RESPONSE ----
-    // Resend SDK returns either { data } or { error }
-    const providerError = (send as any)?.error;
-    if (providerError) {
-      console.error('[notify] provider error:', providerError);
-      // You can return 200 here so the UI doesn't "hard fail" while testing
+    if (send.error) {
+      console.error('[notify] provider error:', send.error);
+      // Return 200 so the UI doesn't hard fail while testing; you can change to 502 if you prefer
       return NextResponse.json(
-        { ok: false, stage: 'provider', providerError, info },
+        { ok: false, stage: 'provider', providerError: send.error, info },
         { status: 200 }
       );
     }
 
-    const id = (send as any)?.data?.id || (send as any)?.id || null;
+    const id = send.data?.id ?? null;
     console.log('[notify] sent ok id=', id);
 
     return NextResponse.json({ ok: true, id, info }, { status: 200 });
-  } catch (e: any) {
-    console.error('[notify] threw:', e);
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
+    console.error('[notify] threw:', message);
     return NextResponse.json(
-      { ok: false, stage: 'server', error: e?.message || String(e) },
+      { ok: false, stage: 'server', error: message },
       { status: 500 }
     );
   }
