@@ -17,20 +17,7 @@ export async function POST(req: Request) {
   const DISCORD_INVITE_URL = process.env.DISCORD_INVITE_URL;
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-  // Your Resend account email (the ONLY recipient allowed while unverified)
-  // Change if your account email is different.
-  const ACCOUNT_EMAIL = 'vem@spryntr.co';
-
-  // Consider domain "verified mode" only if the from-address ends with your verified subdomain
-  const VERIFIED_SUFFIX = '@updates.spryntr.co'; // set this to the subdomain you’ll verify in Resend
-  const isVerifiedMode =
-    typeof ENV_FROM === 'string' &&
-    ENV_FROM.toLowerCase().includes(VERIFIED_SUFFIX);
-
-  // Enforce Resend rules:
-  // - Unverified: from must be onboarding@resend.dev, to must be your account email.
-  // - Verified: from = ENV_FROM, to = user-provided.
-  const SAFE_FROM = 'onboarding@resend.dev';
+ 
 
   try {
     const body = await req.json();
@@ -44,10 +31,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const effectiveFrom = isVerifiedMode ? ENV_FROM! : SAFE_FROM;
-    const effectiveTo = isVerifiedMode ? email : ACCOUNT_EMAIL;
-
-    // Log exactly what we’re about to send with (helps debugging)
+ 
     const info = {
       hasKey: !!RESEND_API_KEY,
       isVerifiedMode,
@@ -72,8 +56,8 @@ export async function POST(req: Request) {
     const resend = new Resend(RESEND_API_KEY);
 
    const send = await resend.emails.send({
-  from: effectiveFrom,
-  to: effectiveTo,
+  from: "vem@spryntr.co",
+  to: email,
   subject: 'Thanks for joining!',
   replyTo: REPLY_TO, // <-- camelCase
   react: React.createElement(WelcomeEmail, {
