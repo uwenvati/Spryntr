@@ -7,6 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// something
 export const runtime = 'nodejs';
 
 function errorMessage(err: unknown): string {
