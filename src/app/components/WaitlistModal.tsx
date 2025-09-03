@@ -49,54 +49,69 @@ export default function WaitlistModal() {
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  e.preventDefault();
+  if (submitting) return;
+  setSubmitting(true);
 
-    try {
-      const payload = {
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        org: form.org,
-        sector: form.sector,
-        country: form.country,
-      };
+  try {
+    console.log('[waitlist] submit clicked');
 
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    const payload = {
+      first_name: form.first_name,
+      last_name: form.last_name,
+      email: form.email,
+      org: form.org,
+      sector: form.sector,
+      country: form.country,
+    };
 
-      // Robust parse so we see useful errors even if server returns HTML by mistake
-      const text = await res.text();
-      let json: unknown;
-      try {
-        json = JSON.parse(text);
-      } catch {
-        json = { error: text };
-      }
+    // 1) Call your insert route
+    const res = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) {
-        const errMsg =
-          typeof json === 'object' && json && 'error' in json
-            ? 
-              (json as { error?: string }).error || 'Failed to join waitlist'
-            : 'Failed to join waitlist';
-        throw new Error(errMsg);
-      }
+    console.log('[waitlist] /api/waitlist status:', res.status);
+    const resText = await res.text();
+    console.log('[waitlist] /api/waitlist body:', resText);
 
-      // success → show Discord card and close modal
-      setShowDiscord(true);
-      close();
-      setForm(initial);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong';
-      alert(msg);
-    } finally {
-      setSubmitting(false);
+    // if insert failed, show exactly why and stop
+    if (!res.ok) {
+      alert(`Join failed (${res.status}). Server said: ${resText}`);
+      return;
     }
-  };
+
+    // 2) Call the email notify endpoint and log everything
+    const notifyRes = await fetch('/api/waitlist/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        first_name: form.first_name,
+      }),
+    });
+
+    const notifyText = await notifyRes.text();
+    console.log('[notify] status:', notifyRes.status);
+    console.log('[notify] body:', notifyText);
+
+    if (!notifyRes.ok) {
+      alert(`Email send failed (${notifyRes.status}). Server said: ${notifyText}`);
+      return;
+    }
+
+    // 3) Success UI
+    setShowDiscord(true);
+    close();
+    setForm(initial);
+  } catch (err) {
+    console.error(err);
+    alert('Unexpected error; check console for details.');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <>
