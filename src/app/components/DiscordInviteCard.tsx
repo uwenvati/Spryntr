@@ -1,7 +1,7 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const DISCORD_INVITE = 'https://discord.gg/mpEbkS4m';
+const DISCORD_INVITE = 'https://discord.gg/U82NkuVc';
 
 export default function DiscordInviteCard({
   show, onClose,
