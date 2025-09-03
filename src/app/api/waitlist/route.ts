@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// something
+// something we can use in tests to mock the runtime
 export const runtime = 'nodejs';
 
 function errorMessage(err: unknown): string {
