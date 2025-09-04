@@ -14,7 +14,7 @@ frontend:
         - printf "FROM_EMAIL=%s\n" "$FROM_EMAIL" >> .env.production
         # Client envs (only those starting with NEXT_PUBLIC_ will be exposed to the browser)
         - env | grep -E '^NEXT_PUBLIC_' >> .env.production || true
-        # Build
+       
         - npm run build
 
   artifacts:
