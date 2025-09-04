@@ -3,16 +3,32 @@ frontend:
   phases:
     preBuild:
       commands:
+        # Optional but recommended: use Node 20 to silence supabase-js warning
+        - nvm install 20
+        - nvm use 20
+        - node -v
         - npm ci
     build:
       commands:
-        # Only expose client-safe envs (NEXT_PUBLIC_*)
+        # ---- Server-only envs (NOT exposed to browser) ----
+        - printf "SUPABASE_URL=%s\n" "$SUPABASE_URL" >> .env.production
+        - printf "SUPABASE_SERVICE_ROLE_KEY=%s\n" "$SUPABASE_SERVICE_ROLE_KEY" >> .env.production
+        - printf "RESEND_API_KEY=%s\n" "$RESEND_API_KEY" >> .env.production
+        - printf "FROM_EMAIL=%s\n" "$FROM_EMAIL" >> .env.production
+        - printf "REPLY_TO=%s\n" "$REPLY_TO" >> .env.production
+        - printf "DISCORD_INVITE_URL=%s\n" "$DISCORD_INVITE_URL" >> .env.production
+
+        # ---- Client envs (only NEXT_PUBLIC_* gets exposed to browser) ----
         - env | grep -E '^NEXT_PUBLIC_' >> .env.production || true
+
+        # Build Next.js
         - npm run build
+
   artifacts:
     baseDirectory: .next
     files:
       - '**/*'
+
   cache:
     paths:
       - node_modules/**/*
