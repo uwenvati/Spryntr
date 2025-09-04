@@ -15,7 +15,7 @@ frontend:
         - printf "SUPABASE_SERVICE_ROLE_KEY=%s\n" "$SUPABASE_SERVICE_ROLE_KEY" >> .env.production
         - printf "RESEND_API_KEY=%s\n" "$RESEND_API_KEY" >> .env.production
         - printf "FROM_EMAIL=%s\n" "$FROM_EMAIL" >> .env.production
-        - printf "REPLY_TO=%s\n" "$REPLY_TO" >> .env.production
+        
         - printf "DISCORD_INVITE_URL=%s\n" "$DISCORD_INVITE_URL" >> .env.production
 
         # ---- Client envs (only NEXT_PUBLIC_* gets exposed to browser) ----
