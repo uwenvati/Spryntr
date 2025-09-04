@@ -29,6 +29,10 @@ export default function WaitlistModal() {
   const [showDiscord, setShowDiscord] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // === TOAST STATE ===
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
   // reset form when closing
   useEffect(() => {
     if (!isOpen) setForm(initial);
@@ -43,75 +47,84 @@ export default function WaitlistModal() {
     return () => window.removeEventListener('keydown', onKey);
   }, [close]);
 
+  // Auto-hide toast after 5s
+  useEffect(() => {
+    if (!toastOpen) return;
+    const id = setTimeout(() => setToastOpen(false), 5000);
+    return () => clearTimeout(id);
+  }, [toastOpen]);
+
   const set =
     (k: keyof FormState) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const onSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (submitting) return;
-  setSubmitting(true);
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
 
-  try {
-    console.log('[waitlist] submit clicked');
+    try {
+      console.log('[waitlist] submit clicked');
 
-    const payload = {
-      first_name: form.first_name,
-      last_name: form.last_name,
-      email: form.email,
-      org: form.org,
-      sector: form.sector,
-      country: form.country,
-    };
-
-    // 1) Call your insert route
-    const res = await fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    console.log('[waitlist] /api/waitlist status:', res.status);
-    const resText = await res.text();
-    console.log('[waitlist] /api/waitlist body:', resText);
-
-    // if insert failed, show exactly why and stop
-    if (!res.ok) {
-      alert(`Join failed (${res.status}). Server said: ${resText}`);
-      return;
-    }
-
-    // 2) Call the email notify endpoint and log everything
-    const notifyRes = await fetch('/api/waitlist/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: form.email,
+      const payload = {
         first_name: form.first_name,
-      }),
-    });
+        last_name: form.last_name,
+        email: form.email,
+        org: form.org,
+        sector: form.sector,
+        country: form.country,
+      };
 
-    const notifyText = await notifyRes.text();
-    console.log('[notify] status:', notifyRes.status);
-    console.log('[notify] body:', notifyText);
+      // 1) Call your insert route
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (!notifyRes.ok) {
-      alert(`Email send failed (${notifyRes.status}). Server said: ${notifyText}`);
-      return;
+      console.log('[waitlist] /api/waitlist status:', res.status);
+      const resText = await res.text();
+      console.log('[waitlist] /api/waitlist body:', resText);
+
+      if (!res.ok) {
+        alert(`Join failed (${res.status}). Server said: ${resText}`);
+        return;
+      }
+
+      // 2) Call the email notify endpoint
+      const notifyRes = await fetch('/api/waitlist/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          first_name: form.first_name,
+        }),
+      });
+
+      const notifyText = await notifyRes.text();
+      console.log('[notify] status:', notifyRes.status);
+      console.log('[notify] body:', notifyText);
+
+      if (!notifyRes.ok) {
+        alert(`Email send failed (${notifyRes.status}). Server said: ${notifyText}`);
+        return;
+      }
+
+      // === SUCCESS ===
+      setToastMsg('Request captured ! Please check your email for a welcome message.');
+      setToastOpen(true);
+
+      setShowDiscord(true);
+      close();
+      setForm(initial);
+    } catch (err) {
+      console.error(err);
+      alert('Unexpected error; check console for details.');
+    } finally {
+      setSubmitting(false);
     }
-
-    // 3) Success UI
-    setShowDiscord(true);
-    close();
-    setForm(initial);
-  } catch (err) {
-    console.error(err);
-    alert('Unexpected error; check console for details.');
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   return (
     <>
@@ -153,7 +166,7 @@ export default function WaitlistModal() {
               </div>
 
               <form onSubmit={onSubmit} className="mt-6 space-y-5">
-                {/* Honeypot for bots (hidden from users) */}
+                {/* Honeypot for bots */}
                 <input
                   type="text"
                   name="company"
@@ -269,11 +282,38 @@ export default function WaitlistModal() {
         )}
       </AnimatePresence>
 
-      {/* DISCORD CARD (after submit) */}
+      {/* DISCORD CARD */}
       <DiscordInviteCard
         show={showDiscord}
         onClose={() => setShowDiscord(false)}
       />
+
+      {/* TOAST */}
+      <div
+        className={`fixed top-4 right-4 z-[100] w-[92vw] max-w-sm transition-all ${
+          toastOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3 pointer-events-none'
+        }`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="rounded-2xl border border-green-200 bg-white shadow-lg">
+          <div className="flex items-start gap-3 p-4">
+            <span className="mt-1 inline-block h-2 w-2 rounded-full bg-green-500" />
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900">Submission Successful</p>
+              <p className="mt-1 text-sm text-gray-700">{toastMsg}</p>
+            </div>
+            <button
+              onClick={() => setToastOpen(false)}
+              className="rounded-lg p-1 hover:bg-gray-100"
+              aria-label="Dismiss"
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
