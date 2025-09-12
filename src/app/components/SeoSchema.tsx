@@ -21,7 +21,7 @@ export default function SeoSchema({ siteUrl }: Props) {
     url: siteUrl,
     logo: `${siteUrl}/favicon.png`,
     sameAs: [
-      // Add your real profiles when ready (or leave empty):
+
       // 'https://www.linkedin.com/company/your-handle',
       // 'https://github.com/your-handle',
       // 'https://twitter.com/your-handle',
@@ -29,7 +29,7 @@ export default function SeoSchema({ siteUrl }: Props) {
     ],
   }
 
-  const webSite = {
+  /* const webSite = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Spryntr',
@@ -39,14 +39,13 @@ export default function SeoSchema({ siteUrl }: Props) {
       target: `${siteUrl}/search?q={query}`,
       'query-input': 'required name=query',
     },
-  }
+  } */ // no search yet
 
   return (
     <>
       <Script id="ld-json-org" type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }} />
-      <Script id="ld-json-website" type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSite) }} />
+      
     </>
   )
 }

@@ -3,8 +3,8 @@ import Navbar from './components/Navbar'
 import { Inter, Outfit } from 'next/font/google'
 import { WaitlistModalProvider } from '@/context/WaitlistModalContext'
 import WaitlistModal from './components/WaitlistModal'
-import type { Metadata } from 'next'
 import SeoSchema from './components/SeoSchema'
+import type { Metadata, Viewport } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.vercel.app'
 const siteName = 'Spryntr'
@@ -35,7 +35,20 @@ export const metadata: Metadata = {
     images: ['/og.png'],
   },
   alternates: { canonical: siteUrl },
+  // ❌ themeColor moved out of here
+}
+
+// ✅ Put theme color (and optional viewport settings) here:
+export const viewport: Viewport = {
   themeColor: '#000000',
+  // Optional but recommended:
+  width: 'device-width',
+  initialScale: 1,
+  // Or support light/dark automatically:
+  // themeColor: [
+  //   { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  //   { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  // ],
 }
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })

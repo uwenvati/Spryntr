@@ -162,13 +162,6 @@ export default function Navbar() {
               </AnimatePresence>
             </li>
           ))}
-
-          {/* Pricing */}
-          <li>
-            <Link href="/pricing" className="text-black">
-              Pricing
-            </Link>
-          </li>
         </ul>
 
         {/* Right: CTA */}
@@ -178,7 +171,7 @@ export default function Navbar() {
             onClick={openWaitlist}
             className="bg-black text-white px-4 py-2 rounded-full flex items-center"
           >
-            Get started
+            Join waitlist
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
@@ -272,17 +265,6 @@ export default function Navbar() {
                     </li>
                   )
                 })}
-
-                {/* Pricing */}
-                <li className="pt-2">
-                  <Link
-                    href="/pricing"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-2xl flex justify-center"
-                  >
-                    Pricing
-                  </Link>
-                </li>
               </ul>
 
               {/* CTA */}
@@ -292,7 +274,7 @@ export default function Navbar() {
                   onClick={() => { openWaitlist(); setMenuOpen(false) }}
                   className="bg-black text-white px-4 py-2 rounded-full flex items-center"
                 >
-                  Get started
+                  Join waitlist
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
