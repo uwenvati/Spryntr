@@ -6,7 +6,7 @@ import WaitlistModal from './components/WaitlistModal'
 import SeoSchema from './components/SeoSchema'
 import type { Metadata, Viewport } from 'next'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.vercel.app'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.co'
 const siteName = 'Spryntr'
 const siteTitle = 'Spryntr — Build your digital foundation'
 const siteDescription =

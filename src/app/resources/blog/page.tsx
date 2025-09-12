@@ -1,3 +1,13 @@
+// app/resources/blog/page.tsx
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Spryntr Blog — Insights & Updates',
+  description:
+    'Read the latest insights, product updates, and thought leadership from the Spryntr team.',
+  alternates: { canonical: 'https://spryntr.co/resources/blog' },
+}
+
 'use client'
 
 import React, { useState } from 'react'

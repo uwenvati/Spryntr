@@ -1,4 +1,13 @@
-// src/app/resources/docs/page.tsx
+
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Spryntr Docs — Developer Documentation',
+  description:
+    'Get started with Spryntr. Explore developer documentation, setup guides, and API references to build with our data platform.',
+  alternates: { canonical: 'https://spryntr.co/resources/docs' },
+}
+
 import Link from 'next/link'
 
 export default function DocsPage() {

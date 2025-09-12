@@ -1,4 +1,13 @@
-// /about/team/page.tsx
+
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Spryntr Team — Meet the Builders',
+  description:
+    'Get to know the Spryntr team of engineers and entrepreneurs working to connect messy data and unlock smarter decisions for organizations everywhere.',
+  alternates: { canonical: 'https://spryntr.co/about/team' },
+}
+
 
 export default function TeamPage() {
   return (
