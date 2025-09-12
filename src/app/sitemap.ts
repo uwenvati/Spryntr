@@ -11,7 +11,7 @@ const routes = [
   '/product/cortex',
   '/resources/docs',
   '/resources/blog',
-  '/join-waitlist',
+  
 ]
 
 
