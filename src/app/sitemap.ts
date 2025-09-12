@@ -1,8 +1,9 @@
+// app/sitemap.ts
 import type { MetadataRoute } from 'next'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.vercel.app'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.co'
 
-// live routes to include in sitemap
+// ✅ Update routes to match your actual site
 const routes = [
   '/', 
   '/about/company',
@@ -10,11 +11,12 @@ const routes = [
   '/product/cortex',
   '/resources/docs',
   '/resources/blog',
-  '/pricing',
+  '/join-waitlist',
 ]
 
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date()
+  const now = new Date().toISOString()
   return routes.map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
