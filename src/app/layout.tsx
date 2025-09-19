@@ -5,6 +5,7 @@ import { WaitlistModalProvider } from '@/context/WaitlistModalContext'
 import WaitlistModal from './components/WaitlistModal'
 import SeoSchema from './components/SeoSchema'
 import type { Metadata, Viewport } from 'next'
+import ConditionalNavbar from './components/ConditionalNavbar'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://spryntr.co'
 const siteName = 'Spryntr'
@@ -63,12 +64,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="bg-[#FCFCFD] text-black font-[var(--font-inter)]">
         <WaitlistModalProvider>
-          <Navbar />
+          {/* Only show navbar if not on studio route */}
+          <ConditionalNavbar />
           {children}
           <WaitlistModal />
         </WaitlistModalProvider>
-
-        {/* JSON-LD schema for SEO */}
         <SeoSchema siteUrl={siteUrl} />
       </body>
     </html>

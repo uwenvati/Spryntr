@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Database,
   BarChart3,
@@ -10,20 +10,48 @@ import {
   ChevronRight,
   ChevronDown,
   X,
+  FileText,
   type LucideProps,
 } from 'lucide-react'
 import Footer from '@/app/components/Footer'
+import { getBlogPosts, SanityBlogPost } from '@/sanity/lib/sanity'
+import { PortableText } from '@portabletext/react'
 
 type IconType = React.ComponentType<LucideProps>
 
 interface BlogPost {
-  id: number
+  id: string | number
   date: string
   tag: string
   title: string
   description: string
   icon: IconType
-  content: string // stored as HTML
+  content: string | any[]
+  isFromSanity?: boolean
+}
+
+// Map of icons for different categories/types
+const iconMap: Record<string, IconType> = {
+  'data': Database,
+  'analytics': BarChart3,
+  'ai': Brain,
+  'brain': Brain,
+  'systems': BarChart3,
+  'default': FileText,
+}
+
+// Portable Text components for Sanity content
+const PortableTextComponents = {
+  block: {
+    h1: ({children}: {children: React.ReactNode}) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
+    h2: ({children}: {children: React.ReactNode}) => <h2 className="text-2xl font-bold mb-4">{children}</h2>,
+    h3: ({children}: {children: React.ReactNode}) => <h3 className="text-xl font-bold mb-3">{children}</h3>,
+    normal: ({children}: {children: React.ReactNode}) => <p className="mb-4 leading-relaxed">{children}</p>,
+  },
+  marks: {
+    strong: ({children}: {children: React.ReactNode}) => <strong>{children}</strong>,
+    em: ({children}: {children: React.ReactNode}) => <em>{children}</em>,
+  },
 }
 
 export default function BlogIndexClient() {
@@ -32,8 +60,11 @@ export default function BlogIndexClient() {
   const [showSearchBy, setShowSearchBy] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
+  const [allBlogPosts, setAllBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const allBlogPosts: BlogPost[] = [
+  // Hardcoded fallback posts
+  const hardcodedPosts: BlogPost[] = [
     {
       id: 1,
       date: 'Jul 21, 2025',
@@ -125,6 +156,57 @@ export default function BlogIndexClient() {
     },
   ]
 
+  // Fetch posts on component mount
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        setLoading(true)
+        
+        // Try to fetch from Sanity
+        const sanityPosts: SanityBlogPost[] = await getBlogPosts()
+        
+        // Convert Sanity posts to BlogPost format
+        const convertedSanityPosts: BlogPost[] = sanityPosts.map(post => {
+          // Determine icon based on title keywords or categories
+          let icon = iconMap.default
+          const titleLower = post.title.toLowerCase()
+          if (titleLower.includes('data') || titleLower.includes('brain')) icon = iconMap.data
+          if (titleLower.includes('ai') || titleLower.includes('cortex')) icon = iconMap.ai
+          if (titleLower.includes('system') || titleLower.includes('analytics')) icon = iconMap.analytics
+          
+          return {
+            id: post._id,
+            date: new Date(post.publishedAt).toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            }),
+            tag: post.author || 'Spryntr Team',
+            title: post.title,
+            description: post.excerpt || `Read more about ${post.title}...`,
+            icon: icon,
+            content: post.body,
+            isFromSanity: true
+          }
+        })
+
+        // Combine Sanity posts with hardcoded posts
+        // Sanity posts first (most recent), then hardcoded posts
+        const combinedPosts = [...convertedSanityPosts, ...hardcodedPosts]
+        setAllBlogPosts(combinedPosts)
+        
+      } catch (error) {
+        console.error('Error fetching Sanity posts:', error)
+        // If Sanity fails, just use hardcoded posts
+        setAllBlogPosts(hardcodedPosts)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+
   const filteredPosts = allBlogPosts.filter((post) => {
     const q = searchTerm.trim().toLowerCase()
     if (!q) return true
@@ -157,6 +239,17 @@ export default function BlogIndexClient() {
   const goToPrevious = () => currentPage > 1 && setCurrentPage(currentPage - 1)
   const goToNext = () => currentPage < totalPages && setCurrentPage(currentPage + 1)
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-black rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading blog posts...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <main className="mt-28">
@@ -170,6 +263,11 @@ export default function BlogIndexClient() {
                 <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
                   {selectedPost.tag}
                 </span>
+                {selectedPost.isFromSanity && (
+                  <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                    CMS
+                  </span>
+                )}
               </div>
               <button
                 onClick={closeBlogPost}
@@ -193,10 +291,16 @@ export default function BlogIndexClient() {
               </div>
             </div>
 
-            <div
-              className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: selectedPost.content }}
-            />
+            <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+              {selectedPost.isFromSanity ? (
+                <PortableText 
+                  value={selectedPost.content} 
+                  components={PortableTextComponents}
+                />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: selectedPost.content as string }} />
+              )}
+            </div>
           </div>
         ) : (
           <div className="max-w-6xl mx-auto px-6 py-16">
@@ -224,7 +328,7 @@ export default function BlogIndexClient() {
                     type="text"
                     placeholder={
                       searchBy === 'Date'
-                        ? 'Search by date (e.g. Jul 21, 2025)'
+                        ? 'Search by date (e.g. Sep 17, 2025)'
                         : searchBy === 'Time'
                         ? 'Search by time'
                         : searchBy === 'Name'
@@ -282,102 +386,120 @@ export default function BlogIndexClient() {
               </div>
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-              {currentPosts.map((post) => {
-                const Icon = post.icon
-                return (
-                  <div
-                    key={post.id}
-                    onClick={() => handleBlogClick(post)}
-                    className="group cursor-pointer transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <div className="flex gap-6 p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                          <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
-                            {post.date}
-                          </span>
-                          <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
-                            {post.tag}
-                          </span>
-                        </div>
-
-                        <h2 className="text-xl font-bold text-black mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                          {post.title}
-                        </h2>
-
-                        <p className="text-gray-600 text-sm leading-relaxed">
-                          {post.description}
-                        </p>
-                      </div>
-
-                      <div className="flex-shrink-0">
-                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
-                          <Icon
-                            size={32}
-                            className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={goToPrevious}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={20} className="text-gray-600" />
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, index) => {
-                  const pageNum = index + 1
-                  if (
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  ) {
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => goToPage(pageNum)}
-                        className={`w-10 h-10 rounded-lg transition-colors ${
-                          currentPage === pageNum
-                            ? 'bg-gray-900 text-white'
-                            : 'hover:bg-gray-100 text-gray-600'
-                        }`}
-                        aria-current={currentPage === pageNum ? 'page' : undefined}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                    return (
-                      <span key={pageNum} className="text-gray-400 px-2">
-                        …
-                      </span>
-                    )
-                  }
-                  return null
-                })}
-
-                <button
-                  onClick={goToNext}
-                  disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={20} className="text-gray-600" />
-                </button>
+            {/* Show message if no posts */}
+            {currentPosts.length === 0 ? (
+              <div className="text-center py-16">
+                <FileText size={48} className="text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No blog posts found</h3>
+                <p className="text-gray-500">
+                  {searchTerm ? 'Try adjusting your search terms' : 'Check back soon for new content!'}
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                  {currentPosts.map((post) => {
+                    const Icon = post.icon
+                    return (
+                      <div
+                        key={post.id}
+                        onClick={() => handleBlogClick(post)}
+                        className="group cursor-pointer transition-all duration-300 hover:-translate-y-1"
+                      >
+                        <div className="flex gap-6 p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-4">
+                              <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
+                                {post.date}
+                              </span>
+                              <span className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">
+                                {post.tag}
+                              </span>
+                              {post.isFromSanity && (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                  CMS
+                                </span>
+                              )}
+                            </div>
+
+                            <h2 className="text-xl font-bold text-black mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                              {post.title}
+                            </h2>
+
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              {post.description}
+                            </p>
+                          </div>
+
+                          <div className="flex-shrink-0">
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
+                              <Icon
+                                size={32}
+                                className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={goToPrevious}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft size={20} className="text-gray-600" />
+                    </button>
+
+                    {Array.from({ length: totalPages }).map((_, index) => {
+                      const pageNum = index + 1
+                      if (
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
+                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => goToPage(pageNum)}
+                            className={`w-10 h-10 rounded-lg transition-colors ${
+                              currentPage === pageNum
+                                ? 'bg-gray-900 text-white'
+                                : 'hover:bg-gray-100 text-gray-600'
+                            }`}
+                            aria-current={currentPage === pageNum ? 'page' : undefined}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                        return (
+                          <span key={pageNum} className="text-gray-400 px-2">
+                            …
+                          </span>
+                        )
+                      }
+                      return null
+                    })}
+
+                    <button
+                      onClick={goToNext}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight size={20} className="text-gray-600" />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

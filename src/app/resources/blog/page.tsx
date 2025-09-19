@@ -13,3 +13,4 @@ export default function BlogPage() {
   // Server component – no hooks here.
   return <BlogIndexClient />
 }
+
