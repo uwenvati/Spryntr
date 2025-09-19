@@ -1,5 +1,5 @@
 import './globals.css'
-import Navbar from './components/Navbar'
+//import Navbar from './components/Navbar'
 import { Inter, Outfit } from 'next/font/google'
 import { WaitlistModalProvider } from '@/context/WaitlistModalContext'
 import WaitlistModal from './components/WaitlistModal'

@@ -53,7 +53,7 @@ export interface SanityBlogPost {
   publishedAt: string
   excerpt?: string
   mainImage?: any
-  body: any[]
+  body: import('@portabletext/types').PortableTextBlock[] 
   author: string
   categories: string[]
 }

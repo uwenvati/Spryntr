@@ -16,9 +16,11 @@ import {
 import Footer from '@/app/components/Footer'
 import { getBlogPosts, SanityBlogPost } from '@/sanity/lib/sanity'
 import { PortableText } from '@portabletext/react'
+import type { PortableTextComponents } from '@portabletext/react'
+import type { PortableTextBlock } from '@portabletext/types'
 
 type IconType = React.ComponentType<LucideProps>
-
+type CMSContent = PortableTextBlock[] 
 interface BlogPost {
   id: string | number
   date: string
@@ -26,7 +28,7 @@ interface BlogPost {
   title: string
   description: string
   icon: IconType
-  content: string | any[]
+  content: string | CMSContent 
   isFromSanity?: boolean
 }
 
@@ -41,18 +43,20 @@ const iconMap: Record<string, IconType> = {
 }
 
 // Portable Text components for Sanity content
-const PortableTextComponents = {
+
+const portableTextComponents: PortableTextComponents = {
   block: {
-    h1: ({children}: {children: React.ReactNode}) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
-    h2: ({children}: {children: React.ReactNode}) => <h2 className="text-2xl font-bold mb-4">{children}</h2>,
-    h3: ({children}: {children: React.ReactNode}) => <h3 className="text-xl font-bold mb-3">{children}</h3>,
-    normal: ({children}: {children: React.ReactNode}) => <p className="mb-4 leading-relaxed">{children}</p>,
+    h1: (props) => <h1 className="text-3xl font-bold mb-4">{props.children}</h1>,
+    h2: (props) => <h2 className="text-2xl font-bold mb-4">{props.children}</h2>,
+    h3: (props) => <h3 className="text-xl font-bold mb-3">{props.children}</h3>,
+    normal: (props) => <p className="mb-4 leading-relaxed">{props.children}</p>,
   },
   marks: {
-    strong: ({children}: {children: React.ReactNode}) => <strong>{children}</strong>,
-    em: ({children}: {children: React.ReactNode}) => <em>{children}</em>,
+    strong: (props) => <strong>{props.children}</strong>,
+    em: (props) => <em>{props.children}</em>,
   },
 }
+
 
 export default function BlogIndexClient() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -185,7 +189,7 @@ export default function BlogIndexClient() {
             title: post.title,
             description: post.excerpt || `Read more about ${post.title}...`,
             icon: icon,
-            content: post.body,
+             content: post.body as CMSContent,
             isFromSanity: true
           }
         })
@@ -294,8 +298,8 @@ export default function BlogIndexClient() {
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
               {selectedPost.isFromSanity ? (
                 <PortableText 
-                  value={selectedPost.content} 
-                  components={PortableTextComponents}
+                       value={selectedPost.content as CMSContent}
+      components={portableTextComponents} 
                 />
               ) : (
                 <div dangerouslySetInnerHTML={{ __html: selectedPost.content as string }} />
