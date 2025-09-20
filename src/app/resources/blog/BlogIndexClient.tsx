@@ -14,7 +14,7 @@ import {
   type LucideProps,
 } from 'lucide-react'
 import Footer from '@/app/components/Footer'
-import { getBlogPosts, SanityBlogPost } from '@/sanity/lib/sanity'
+import { getBlogPosts, SanityBlogPost, PortableTextBlock } from '@/sanity/lib/sanity'
 import { PortableText, PortableTextComponents } from '@portabletext/react'
 
 type IconType = React.ComponentType<LucideProps>
@@ -26,7 +26,7 @@ interface BlogPost {
   title: string
   description: string
   icon: IconType
-  content: string | any[]
+  content: string | PortableTextBlock[]
   isFromSanity?: boolean
 }
 
@@ -54,6 +54,99 @@ const portableTextComponents: PortableTextComponents = {
   },
 }
 
+// Hardcoded fallback posts - moved outside component to avoid dependency issues
+const hardcodedPosts: BlogPost[] = [
+  {
+    id: 1,
+    date: 'Jul 21, 2025',
+    tag: 'Goodluck Udoh',
+    title: "Why Data is the 'Brain' of Modern Companies ?",
+    description:
+      "Data powers decisions, drives operations, and transforms information into intelligence—the true brain of every modern company.",
+    icon: Database,
+    content: `
+      <h2>Why Data is the 'Brain' of Modern Companies</h2>
+      <p>In today's digital-first economy, data is no longer just a byproduct of business operations—it is the driving force behind innovation, strategy, and long-term growth. Just as the human brain processes information, directs actions, and adapts to changing environments, data now serves as the cognitive engine that powers modern organizations. Companies that learn to treat their data as a brain rather than a static archive of numbers unlock a competitive edge that defines success in the 21st century.</p>
+
+      <h3>Data as the Decision-Making Core</h3>
+      <p>The human brain constantly collects sensory inputs, processes them, and turns them into decisions. In the same way, data acts as the central nervous system for enterprises. From market trends to customer behavior, organizations rely on data to inform decisions at every level. Without it, decisions become guesswork—slow, risky, and disconnected from reality.</p>
+
+      <h3>Breaking Free from Data Silos</h3>
+      <p>Many enterprises struggle because their "brain" is fragmented. Data often sits in silos—different departments, tools, or legacy systems—making it hard to connect the dots. A fragmented brain cannot function efficiently, and the same applies to organizations with disconnected data. Unified data platforms bridge these gaps, creating a complete picture that fosters alignment, collaboration, and smarter strategies.</p>
+
+      <h3>Powering Adaptability and Growth</h3>
+      <p>What separates successful organizations from stagnant ones is adaptability. Just as the brain learns and evolves, data enables companies to predict market shifts, respond to disruptions, and scale intelligently. Businesses that harness data effectively move beyond hindsight reports and into foresight—using predictive analytics and AI-driven insights to anticipate challenges before they occur.</p>
+
+      <h3>The Future: Data as the Brain, AI as the Nervous System</h3>
+      <p>If data is the brain, then AI acts as the nervous system—accelerating processing, learning from patterns, and enabling real-time decision-making. Together, they empower companies to move from reactive to proactive, from rigid to adaptive, and from operational to truly intelligent.</p>
+    `,
+  },
+  {
+    id: 2,
+    date: 'Jul 03, 2025',
+    tag: 'Goodluck Udoh',
+    title: 'From Spreadsheets to Systems: The Evolution of Enterprise Data Tools',
+    description:
+      "Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.",
+    icon: BarChart3,
+    content: `
+      <h2>From Spreadsheets to Systems: The Evolution of Enterprise Data Tools</h2>
+      <p>Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.</p>
+
+      <h3>The Spreadsheet Era</h3>
+      <p>For decades, spreadsheets were the go-to tool for data analysis. They were accessible, familiar, and flexible enough for most business needs. However, as data volumes grew exponentially, spreadsheets began to show their limitations.</p>
+
+      <h3>Modern Data Systems</h3>
+      <p>Today's enterprise data tools offer unprecedented capabilities for handling vast amounts of information, providing real-time analytics, and enabling collaborative decision-making across organizations.</p>
+
+      <h3>The Future of Data Tools</h3>
+      <p>As we move forward, enterprise data tools will continue to evolve, incorporating AI and machine learning to provide even more powerful insights and automation capabilities.</p>
+    `,
+  },
+  {
+    id: 3,
+    date: 'Jul 21, 2025',
+    tag: 'Goodluck Udoh',
+    title: 'AI + Cortex: Unlocking Predictive and Adaptive Decision-Making',
+    description:
+      'Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.',
+    icon: Brain,
+    content: `
+      <h2>AI + Cortex: Unlocking Predictive and Adaptive Decision-Making</h2>
+      <p>Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.</p>
+
+      <h3>The Power of Predictive Analytics</h3>
+      <p>Traditional analytics tell you what happened. Predictive analytics powered by AI tell you what will happen, giving organizations the ability to prepare for future challenges and opportunities.</p>
+
+      <h3>Real-Time Adaptation</h3>
+      <p>Cortex doesn't just predict—it adapts. As new data flows in, the system continuously learns and adjusts its recommendations, ensuring that organizations stay ahead of rapidly changing market conditions.</p>
+
+      <h3>Precision Decision-Making</h3>
+      <p>By combining historical data with real-time inputs and predictive modeling, Cortex enables organizations to make decisions with unprecedented precision and confidence.</p>
+    `,
+  },
+  {
+    id: 4,
+    date: 'Jul 03, 2025',
+    tag: 'Goodluck Udoh',
+    title:
+      'Digital Backbones: The Secret Ingredient Behind Adaptive Organizations',
+    description:
+      'A strong digital backbone connects data, processes, and systems, enabling organizations to stay agile, adaptive, and future-ready.',
+    icon: SearchIcon,
+    content: `
+      <h2>Digital Backbones: The Secret Ingredient Behind Adaptive Organizations</h2>
+      <p>A strong digital backbone connects data, processes, and systems, enabling organizations to stay agile, adaptive, and future-ready.</p>
+
+      <h3>What is a Digital Backbone?</h3>
+      <p>A digital backbone is the underlying infrastructure that connects all of an organization's digital assets, from data repositories to applications to communication systems.</p>
+
+      <h3>Building Adaptive Organizations</h3>
+      <p>Organizations with strong digital backbones can quickly adapt to change, scale their operations efficiently, and respond to market demands with agility.</p>
+    `,
+  },
+]
+
 export default function BlogIndexClient() {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchBy, setSearchBy] = useState<'Search by' | 'Date' | 'Time' | 'Name'>('Search by')
@@ -63,98 +156,7 @@ export default function BlogIndexClient() {
   const [allBlogPosts, setAllBlogPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Hardcoded fallback posts
-  const hardcodedPosts: BlogPost[] = [
-    {
-      id: 1,
-      date: 'Jul 21, 2025',
-      tag: 'Goodluck Udoh',
-      title: "Why Data is the 'Brain' of Modern Companies ?",
-      description:
-        "Data powers decisions, drives operations, and transforms information into intelligence—the true brain of every modern company.",
-      icon: Database,
-      content: `
-        <h2>Why Data is the 'Brain' of Modern Companies</h2>
-        <p>In today's digital-first economy, data is no longer just a byproduct of business operations—it is the driving force behind innovation, strategy, and long-term growth. Just as the human brain processes information, directs actions, and adapts to changing environments, data now serves as the cognitive engine that powers modern organizations. Companies that learn to treat their data as a brain rather than a static archive of numbers unlock a competitive edge that defines success in the 21st century.</p>
-
-        <h3>Data as the Decision-Making Core</h3>
-        <p>The human brain constantly collects sensory inputs, processes them, and turns them into decisions. In the same way, data acts as the central nervous system for enterprises. From market trends to customer behavior, organizations rely on data to inform decisions at every level. Without it, decisions become guesswork—slow, risky, and disconnected from reality.</p>
-
-        <h3>Breaking Free from Data Silos</h3>
-        <p>Many enterprises struggle because their "brain" is fragmented. Data often sits in silos—different departments, tools, or legacy systems—making it hard to connect the dots. A fragmented brain cannot function efficiently, and the same applies to organizations with disconnected data. Unified data platforms bridge these gaps, creating a complete picture that fosters alignment, collaboration, and smarter strategies.</p>
-
-        <h3>Powering Adaptability and Growth</h3>
-        <p>What separates successful organizations from stagnant ones is adaptability. Just as the brain learns and evolves, data enables companies to predict market shifts, respond to disruptions, and scale intelligently. Businesses that harness data effectively move beyond hindsight reports and into foresight—using predictive analytics and AI-driven insights to anticipate challenges before they occur.</p>
-
-        <h3>The Future: Data as the Brain, AI as the Nervous System</h3>
-        <p>If data is the brain, then AI acts as the nervous system—accelerating processing, learning from patterns, and enabling real-time decision-making. Together, they empower companies to move from reactive to proactive, from rigid to adaptive, and from operational to truly intelligent.</p>
-      `,
-    },
-    {
-      id: 2,
-      date: 'Jul 03, 2025',
-      tag: 'Goodluck Udoh',
-      title: 'From Spreadsheets to Systems: The Evolution of Enterprise Data Tools',
-      description:
-        "Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.",
-      icon: BarChart3,
-      content: `
-        <h2>From Spreadsheets to Systems: The Evolution of Enterprise Data Tools</h2>
-        <p>Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.</p>
-
-        <h3>The Spreadsheet Era</h3>
-        <p>For decades, spreadsheets were the go-to tool for data analysis. They were accessible, familiar, and flexible enough for most business needs. However, as data volumes grew exponentially, spreadsheets began to show their limitations.</p>
-
-        <h3>Modern Data Systems</h3>
-        <p>Today's enterprise data tools offer unprecedented capabilities for handling vast amounts of information, providing real-time analytics, and enabling collaborative decision-making across organizations.</p>
-
-        <h3>The Future of Data Tools</h3>
-        <p>As we move forward, enterprise data tools will continue to evolve, incorporating AI and machine learning to provide even more powerful insights and automation capabilities.</p>
-      `,
-    },
-    {
-      id: 3,
-      date: 'Jul 21, 2025',
-      tag: 'Goodluck Udoh',
-      title: 'AI + Cortex: Unlocking Predictive and Adaptive Decision-Making',
-      description:
-        'Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.',
-      icon: Brain,
-      content: `
-        <h2>AI + Cortex: Unlocking Predictive and Adaptive Decision-Making</h2>
-        <p>Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.</p>
-
-        <h3>The Power of Predictive Analytics</h3>
-        <p>Traditional analytics tell you what happened. Predictive analytics powered by AI tell you what will happen, giving organizations the ability to prepare for future challenges and opportunities.</p>
-
-        <h3>Real-Time Adaptation</h3>
-        <p>Cortex doesn't just predict—it adapts. As new data flows in, the system continuously learns and adjusts its recommendations, ensuring that organizations stay ahead of rapidly changing market conditions.</p>
-
-        <h3>Precision Decision-Making</h3>
-        <p>By combining historical data with real-time inputs and predictive modeling, Cortex enables organizations to make decisions with unprecedented precision and confidence.</p>
-      `,
-    },
-    {
-      id: 4,
-      date: 'Jul 03, 2025',
-      tag: 'Goodluck Udoh',
-      title:
-        'Digital Backbones: The Secret Ingredient Behind Adaptive Organizations',
-      description:
-        'A strong digital backbone connects data, processes, and systems, enabling organizations to stay agile, adaptive, and future-ready.',
-      icon: SearchIcon,
-      content: `
-        <h2>Digital Backbones: The Secret Ingredient Behind Adaptive Organizations</h2>
-        <p>A strong digital backbone connects data, processes, and systems, enabling organizations to stay agile, adaptive, and future-ready.</p>
-
-        <h3>What is a Digital Backbone?</h3>
-        <p>A digital backbone is the underlying infrastructure that connects all of an organization's digital assets, from data repositories to applications to communication systems.</p>
-
-        <h3>Building Adaptive Organizations</h3>
-        <p>Organizations with strong digital backbones can quickly adapt to change, scale their operations efficiently, and respond to market demands with agility.</p>
-      `,
-    },
-  ]
+  // Hardcoded fallback posts - removed from here, now defined above
 
   // Fetch posts on component mount
   useEffect(() => {
@@ -294,7 +296,7 @@ export default function BlogIndexClient() {
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
               {selectedPost.isFromSanity ? (
                 <PortableText 
-                  value={selectedPost.content} 
+                  value={selectedPost.content as PortableTextBlock[]} 
                   components={portableTextComponents}
                 />
               ) : (
