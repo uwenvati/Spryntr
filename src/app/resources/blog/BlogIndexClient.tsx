@@ -448,7 +448,7 @@ export default function BlogIndexClient() {
                   })}
                 </div>
 
-                {/* Pagination */}
+                {/* Pag... */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2">
                     <button
