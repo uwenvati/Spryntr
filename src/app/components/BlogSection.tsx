@@ -1,45 +1,102 @@
-import React from 'react';
-import { Database, BarChart3, Brain, Search } from 'lucide-react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
+import { Database, BarChart3, Brain, Search, ArrowRight, LucideProps } from 'lucide-react';
+import Link from 'next/link';
+import { getBlogPosts, SanityBlogPost } from '@/sanity/lib/sanity';
+
+// Define the post interface
+interface BlogPost {
+  id: string;
+  date: string;
+  tag: string;
+  title: string;
+  description: string;
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+}
+
+// Same hardcoded posts as fallback (matching your blog page)
+const fallbackPosts: BlogPost[] = [
+  {
+    id: '1',
+    date: 'Jul 21, 2025',
+    tag: 'Goodluck Udoh',
+    title: "Why Data is the 'Brain' of Modern Companies ?",
+    description: "Data powers decisions, drives operations, and transforms information into intelligence—the true brain of every modern company.",
+    icon: Database,
+  },
+  {
+    id: '2',
+    date: 'Jul 03, 2025',
+    tag: 'Goodluck Udoh',
+    title: "From Spreadsheets to Systems: The Evolution of Enterprise Data Tools",
+    description: "Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.",
+    icon: BarChart3,
+  },
+  {
+    id: '3',
+    date: 'Jul 21, 2025',
+    tag: 'Goodluck Udoh',
+    title: "AI + Cortex: Unlocking Predictive and Adaptive Decision-Making",
+    description: "Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.",
+    icon: Brain,
+  }
+];
+
+const iconMap: Record<string, React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>> = {
+  'data': Database,
+  'analytics': BarChart3,
+  'ai': Brain,
+  'brain': Brain,
+  'systems': BarChart3,
+  'default': Search,
+};
 
 const BlogSection = () => {
-  const blogPosts = [
-    {
-      id: 1,
-      date: 'Jul 21, 2023',
-      tag: 'Goodluck Udoh',
-      title: "Why Data is the 'Brain' of Modern Companies ?",
-      description: "Data powers decisions, drives operations, and transforms information into intelligence—the true brain of every modern company.",
-      icon: Database,
-      href: "/blog/why-data-is-brain"
-    },
-    {
-      id: 2,
-      date: 'Jul 03, 2023',
-      tag: 'Goodluck Udoh',
-      title: "From Spreadsheets to Systems: The Evolution of Enterprise Data Tools",
-      description: "Enterprise data has outgrown spreadsheets—today's systems unify, automate, and scale insights to power smarter, faster decisions.",
-      icon: BarChart3,
-      href: "/blog/spreadsheets-to-systems"
-    },
-    {
-      id: 3,
-      date: 'Jul 21, 2023',
-      tag: 'Goodluck Udoh',
-      title: "AI + Cortex: Unlocking Predictive and Adaptive Decision-Making",
-      description: "Cortex, powered by AI, transforms data into foresight. It predicts outcomes, adapts in real time, empowers organizations to move faster, anticipate challenges, and act with precision.",
-      icon: Brain,
-      href: "/blog/ai-cortex-predictive"
-    },
-    {
-      id: 4,
-      date: 'Jul 03, 2023',
-      tag: 'Goodluck Udoh',
-      title: "Digital Backbones: The Secret Ingredient Behind Adaptive Organizations",
-      description: "A strong digital backbone connects data, processes, and systems, enabling organizations to stay agile, adaptive, and future-ready.",
-      icon: Search,
-      href: "/blog/digital-backbones"
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(fallbackPosts);
+
+  useEffect(() => {
+    // Fetch recent posts from Sanity
+    async function fetchRecentPosts() {
+      try {
+        const sanityPosts: SanityBlogPost[] = await getBlogPosts();
+        
+        if (sanityPosts.length > 0) {
+          // Convert Sanity posts and take first 3
+          const convertedPosts: BlogPost[] = sanityPosts.slice(0, 3).map(post => {
+            let icon = iconMap.default;
+            const titleLower = post.title.toLowerCase();
+            if (titleLower.includes('data') || titleLower.includes('brain')) icon = iconMap.data;
+            if (titleLower.includes('ai') || titleLower.includes('cortex')) icon = iconMap.ai;
+            if (titleLower.includes('system') || titleLower.includes('analytics')) icon = iconMap.analytics;
+            
+            return {
+              id: post._id,
+              date: new Date(post.publishedAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              }),
+              tag: post.author || 'Spryntr Team',
+              title: post.title,
+              description: post.excerpt || `${post.title.substring(0, 120)}...`,
+              icon: icon,
+            };
+          });
+          
+          // Combine Sanity posts with fallback posts, then take first 3
+          const allPosts: BlogPost[] = [...convertedPosts, ...fallbackPosts];
+          setBlogPosts(allPosts.slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Error fetching recent posts:', error);
+        // Keep fallback posts if Sanity fails
+        setBlogPosts(fallbackPosts.slice(0, 3));
+      }
     }
-  ];
+
+    fetchRecentPosts();
+  }, []);
 
   return (
     <section className="py-16 px-6 max-w-7xl mx-auto">
@@ -53,12 +110,13 @@ const BlogSection = () => {
       </div>
 
       {/* Blog Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {blogPosts.map((post) => {
           const IconComponent = post.icon;
           return (
-            <div
-              key={post.id}
+            <Link 
+              key={post.id} 
+              href="/resources/blog"
               className="group cursor-pointer transition-all duration-300 hover:transform hover:-translate-y-1"
             >
               <div className="flex gap-6 p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300">
@@ -80,9 +138,15 @@ const BlogSection = () => {
                   </h2>
 
                   {/* Description */}
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
                     {post.description}
                   </p>
+
+                  {/* Read More Indicator */}
+                  <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors">
+                    Read more 
+                    <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
 
                 {/* Icon */}
@@ -95,9 +159,20 @@ const BlogSection = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
+      </div>
+
+      {/* View All Posts Button */}
+      <div className="text-center">
+        <Link 
+          href="/resources/blog"
+          className="inline-flex items-center px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors duration-300"
+        >
+          View All Posts
+          <ArrowRight size={20} className="ml-2" />
+        </Link>
       </div>
     </section>
   );
