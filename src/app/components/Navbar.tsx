@@ -65,27 +65,37 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
   const [openMobileKey, setOpenMobileKey] = useState<MenuKey>(null)
   const { open: openWaitlist } = useWaitlistModal()
 
-  // detect touch
-  const [isTouch, setIsTouch] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia?.('(pointer: coarse)')
-    setIsTouch(!!mq?.matches)
-    if (!mq) return
-    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
-    
-    mq.addEventListener ? mq.addEventListener('change', handler) : mq.addListener(handler)
-    return () => {
-    
-      mq.removeEventListener ? mq.removeEventListener('change', handler) : mq.removeListener(handler)
+// detect touch
+const [isTouch, setIsTouch] = useState(false)
+useEffect(() => {
+  const mq = window.matchMedia?.('(pointer: coarse)')
+  setIsTouch(!!mq?.matches)
+  if (!mq) return
+  const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
+  
+  // Fix line 76 - use if/else instead of ternary expression
+  if (mq.addEventListener) {
+    mq.addEventListener('change', handler)
+  } else {
+    mq.addListener(handler)
+  }
+  
+  return () => {
+    // Fix line 79 - use if/else instead of ternary expression
+    if (mq.removeEventListener) {
+      mq.removeEventListener('change', handler)
+    } else {
+      mq.removeListener(handler)
     }
-  }, [])
+  }
+}, [])
 
-  // scroll → glossy toggle
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+// scroll → glossy toggle
+useEffect(() => {
+  const onScroll = () => setScrolled(window.scrollY > 10)
+  window.addEventListener('scroll', onScroll, { passive: true })
+  return () => window.removeEventListener('scroll', onScroll)
+}, [])
 
   const cancelClose = () => { if (closeTimer.current) clearTimeout(closeTimer.current) }
   const scheduleClose = () => { cancelClose(); closeTimer.current = setTimeout(() => setOpenKey(null), 150) }

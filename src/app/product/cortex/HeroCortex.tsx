@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Play, ShieldCheck, Zap } from 'lucide-react'
+import { ArrowRight, Play} from 'lucide-react'
 import { useWaitlistModal } from '@/context/WaitlistModalContext'
 
 export default function HeroCortex() {
