@@ -35,7 +35,7 @@ function Icon({
   isDark,
 }: { name?: 'folder' | 'users' | 'book' | 'git' | 'file' | 'cortex'; isDark: boolean }) {
   if (!name) return <span className="w-4 h-4" />
-  if (name === 'cortex') return <Image src="/cortex-icon" alt="Cortex" width={16} height={16} />
+  if (name === 'cortex') return <Image src="/cortex-icon.svg" alt="Cortex" width={16} height={16} />
   const common = { size: 16, className: isDark ? 'text-white' : 'text-black' } as const
   switch (name) {
     case 'folder': return <Folder {...common} />
