@@ -12,6 +12,8 @@ interface BlogPost {
   title: string
   description: string
   icon: React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>
+    mainImage?: string      // ADD THIS
+  imageAlt?: string       // ADD THIS
 }
 
 const iconMap: Record<string, BlogPost['icon']> = {
@@ -49,6 +51,8 @@ export default function BlogSection() {
             title: post.title,
             description: post.excerpt || `${post.title.substring(0, 120)}...`,
             icon,
+            mainImage: post.mainImage?.asset?.url,           // ADD THIS
+            imageAlt: post.mainImage?.alt || post.title,     // ADD THIS
           }
         })
 
@@ -104,12 +108,20 @@ export default function BlogSection() {
                   </div>
                 </div>
 
-                {/* Icon */}
-                <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
-                    <IconComponent size={32} className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300" />
-                  </div>
-                </div>
+                {/* Icon or Image */}
+ <div className="flex-shrink-0 self-start">
+  {post.mainImage ? (
+    <img 
+      src={post.mainImage}
+      alt={post.imageAlt || post.title}
+      className="w-16 h-16 rounded-lg object-cover"
+    />
+  ) : (
+    <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
+      <IconComponent size={24} className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300" />
+    </div>
+  )}
+</div>
               </div>
             </Link>
           )

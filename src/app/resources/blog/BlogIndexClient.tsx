@@ -29,6 +29,8 @@ interface BlogPost {
   icon: IconType
   content: string | PortableTextBlock[]
   isFromSanity?: boolean
+  mainImage?: string      // ADD THIS
+  imageAlt?: string
 }
 
 const iconMap: Record<string, IconType> = {
@@ -92,6 +94,8 @@ export default function BlogIndexClient() {
             icon,
             content: post.body,
             isFromSanity: true,
+            mainImage: post.mainImage?.asset?.url,     // ADD THIS
+            imageAlt: post.mainImage?.alt || post.title, // ADD THIS
           }
         })
 
@@ -185,14 +189,22 @@ export default function BlogIndexClient() {
 
             <h1 className="text-4xl font-bold text-black mb-8 text-center">{selectedPost.title}</h1>
 
-            <div className="flex justify-center mb-12">
-              <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                {(() => {
-                  const Icon = selectedPost.icon
-                  return <Icon size={48} className="text-gray-600" />
-                })()}
-              </div>
-            </div>
+          <div className="flex justify-center mb-12">
+  {selectedPost.mainImage ? (
+    <img 
+      src={selectedPost.mainImage}
+      alt={selectedPost.imageAlt || selectedPost.title}
+      className="w-full max-w-3xl h-auto rounded-lg object-cover shadow-lg"
+    />
+  ) : (
+    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+      {(() => {
+        const Icon = selectedPost.icon
+        return <Icon size={48} className="text-gray-600" />
+      })()}
+    </div>
+  )}
+</div>
 
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
               {selectedPost.isFromSanity ? (
@@ -311,11 +323,19 @@ export default function BlogIndexClient() {
                             <p className="text-gray-600 text-sm leading-relaxed">{post.description}</p>
                           </div>
 
-                          <div className="flex-shrink-0">
-                            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
-                              <Icon size={32} className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300" />
-                            </div>
-                          </div>
+                          <div className="flex-shrink-0 self-start">
+  {post.mainImage ? (
+    <img 
+      src={post.mainImage}
+      alt={post.imageAlt || post.title}
+      className="w-20 h-20 rounded-lg object-cover"
+    />
+  ) : (
+    <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors duration-300">
+      <Icon size={32} className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300" />
+    </div>
+  )}
+</div>
                         </div>
                       </div>
                     )

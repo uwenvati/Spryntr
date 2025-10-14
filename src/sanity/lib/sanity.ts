@@ -17,6 +17,13 @@ export async function getBlogPosts() {
         slug,
         publishedAt,
         excerpt,
+        mainImage {
+          asset->{
+            _id,
+            url
+          },
+          alt
+        },
         body,
         "author": author->name,
         "categories": categories[]->title
@@ -35,6 +42,13 @@ export interface SanityBlogPost {
   slug: { current: string }
   publishedAt: string
   excerpt?: string
+  mainImage?: {
+    asset: {
+      _id: string
+      url: string
+    }
+    alt?: string
+  }
   body: PortableTextBlock[]
   author: string
   categories: string[]
